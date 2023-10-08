@@ -12,11 +12,11 @@
     <v-text-field
       v-model="localSearch"
       dense
-      hide-details 
+      hide-details
       label="Pesquisar"
       outlined
       prepend-inner-icon="mdi-magnify"
-      filled 
+      filled
     ></v-text-field>
   </v-toolbar>
 </template>
@@ -37,9 +37,9 @@ export default {
     },
   },
   methods: {
-   openModalCreate() {
+    openModalCreate() {
       this.$emit("open-modal");
     },
-  }
+  },
 };
 </script>

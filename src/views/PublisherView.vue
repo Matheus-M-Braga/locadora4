@@ -24,7 +24,6 @@
             'items-per-page-text': 'Registros por página',
             'items-per-page-options': [7, 10, 15, this.totalItems],
           }"
-          @pagination="handlePagination"
           @update:options="handleOptionsUpdate"
           mobile-breakpoint="890"
           class="elevation-1"
@@ -148,6 +147,10 @@ export default {
       id: 0,
       name: "",
       city: "",
+      totalItems: 0,
+      pageSize: 0,
+      OrderBy: "Id",
+      page: 1,
       dialog: false,
       dialogDelete: false,
       publisherId: null,
@@ -179,6 +182,7 @@ export default {
   methods: {
     updateSearch(newSearchValue) {
       this.search = newSearchValue;
+      this.getPublishers();
     },
     // Search
     filter(value, search) {
@@ -194,7 +198,12 @@ export default {
       this.loadingTable = true;
       try {
         const [publisherResponse] = await Promise.all([
-          Publisher.list({ Page: 1, PageSize: 15 }),
+          Publisher.list({
+            Page: this.page,
+            PageSize: this.pageSize,
+            OrderBy: this.OrderBy,
+            FilterValue: this.search,
+          }),
         ]);
         const data = publisherResponse.data.response;
         this.publishers = data.data.map((publisher) => ({
@@ -202,11 +211,28 @@ export default {
           name: publisher.name,
           city: publisher.city,
         }));
+
+        this.totalItems = data.totalRegisters;
       } catch (error) {
         console.error("Erro ao buscar informações:", error);
       } finally {
         this.loadingTable = false;
       }
+    },
+
+    handleOptionsUpdate(options) {
+      console.log(options);
+      const sortByMapping = {
+        id: "Id",
+        name: "Name",
+        city: "City",
+      };
+      if (options.sortBy[0]) {
+        this.OrderBy = sortByMapping[options.sortBy[0].toLowerCase()];
+      }
+      this.pageSize = options.itemsPerPage;
+      this.page = options.page;
+      this.getPublishers();
     },
     CheckNames() {
       return this.publishers.some((publisher) => publisher.name == this.name);

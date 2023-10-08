@@ -6,6 +6,8 @@ export default {
       params: {
         Page: params.Page,
         PageSize: params.PageSize,
+        OrderBy: params.OrderBy,
+        FilterValue: params.FilterValue
       },
     });
   },
