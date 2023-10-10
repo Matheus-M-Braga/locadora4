@@ -26,7 +26,7 @@ import PieChart from "@/components/PieChart";
 import User from "@/services/users";
 import Book from "@/services/book";
 import Publi from "@/services/publi";
-import Rental from "@/services/rental";
+// import Rental from "@/services/rental";
 export default {
   data: () => ({
     cards: [
@@ -58,6 +58,10 @@ export default {
     rented: 0,
     users: 0,
     publis: 0,
+    totalUsers: 0,
+    totalBooks: 0,
+    totalPublishers: 0,
+    totalRentals: 0,
     Listusers: [],
     Listpublis: [],
     total: 0,
@@ -65,56 +69,57 @@ export default {
     lastRented: "",
   }),
   mounted() {
-    this.listBooks();
-    this.listAlugs();
-    this.listUsersPubli();
+    this.getBooks();
+    // this.getRentals();
+    this.getUsersAndPublishers();
   },
   components: {
     LineChart,
     PieChart,
   },
   methods: {
-    updateCardValues() {
+    async updateCardValues() {
       this.cards[0].value = this.lastRented;
       this.cards[1].value = this.availableBooks;
       this.cards[2].value = this.rented;
-      this.cards[3].value = this.rentals.length;
+      this.cards[3].value = this.totalRentals;
       this.cards[4].value = this.Listusers.length;
       this.cards[5].value = this.publis;
     },
-    listBooks() {
-      Book.list()
+    async getBooks() {
+      await Book.listSelect()
         .then((response) => {
-          this.books = response.data.data;
-          this.CalcDisp();
+          this.books = response.data.response;
+          this.getAvailableBooks();
         })
         .catch((error) => {
           console.error("Erro na busca de livros", error);
         });
     },
-    listAlugs() {
-      this.loadingCard = true;
-      Rental.list()
-        .then((response) => {
-          this.rentals = response.data.data;
-          this.CalcAlug();
-          this.totalCalc();
-        })
-        .catch((error) => {
-          console.error("Erro na busca de aluguéis", error);
-        })
-        .finally(() => {
-          this.loadingCard = false;
-        });
-    },
-    async listUsersPubli() {
+    // async getRentals() {
+    //   this.loadingCard = true;
+    //   await Rental.list({ Page: 1 })
+    //     .then((response) => {
+    //       this.rentals = response.data.response.data;
+    //       this.totalRentals = response.data.response.totalRegisters;
+    //       this.lastRent();
+    //       this.getPendingRentals();
+    //     })
+    //     .catch((error) => {
+    //       console.error("Erro na busca de aluguéis", error);
+    //     })
+    //     .finally(() => {
+    //       this.loadingCard = false;
+    //     });
+    // },
+    async getUsersAndPublishers() {
       try {
-        const usersResponse = await User.list();
-        this.Listusers = usersResponse.data.data;
+        const usersResponse = await User.listSelect();
+        this.Listusers = usersResponse.data.response;
         this.users = this.Listusers.length;
 
-        const publisResponse = await Publi.list();
-        this.Listpublis = publisResponse.data.data;
+        const publisResponse = await Publi.listSelect();
+        this.Listpublis = publisResponse.data.response;
         this.publis = this.Listpublis.length;
 
         this.updateCardValues();
@@ -122,22 +127,21 @@ export default {
         console.error("Erro ao buscar usuários e editoras", error);
       }
     },
-    CalcDisp() {
-      this.availableBooks = this.books.reduce(
-        (total, book) => total + book.quantity,
-        0
-      );
+    async getAvailableBooks() {
+      console.log(this.books)
+      this.availableBooks = await this.books.reduce((total, book) => total + book.quantity, 0);
+      console.log(this.availableBooks)
     },
-    totalCalc() {
-      const filtereds = this.rentals.filter((rental) => !rental.returnDate);
-      this.rented = filtereds.length;
-    },
-    CalcAlug() {
-      const last = this.rentals.reduce((prev, current) => {
-        return prev.id < current.id ? current : prev;
-      });
-      this.lastRented = last.book.name;
-    },
+    // async getPendingRentals() {
+    //   const filtereds = this.rentals.filter((rental) => !rental.returnDate);
+    //   this.rented = filtereds.length;
+    // },
+    // async lastRent() {
+    //   const last = await this.rentals.reduce((prev, current) => {
+    //     return prev.id < current.id ? current : prev;
+    //   });
+    //   this.lastRented = last.book.name;
+    // },
   },
 };
 </script>

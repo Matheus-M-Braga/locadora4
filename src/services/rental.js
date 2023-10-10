@@ -1,15 +1,23 @@
-import axios from './config'
+import axios from "./config";
+
 export default {
-   list: () => {
-     return axios.get("rentals");
-   },
-   create: (aluguel) => {
-     return axios.post("/rentals", aluguel);
-   },
-   update: (aluguel) => {
-     return axios.put(`/rentals`, aluguel);
-   },
-   delete: (aluguel) => {
-     return axios.delete("rentals", { data: aluguel });
-   },
- };
+  list: (params) => {
+    return axios.get("rentals", {
+      params: {
+        Page: params.Page,
+        PageSize: params.PageSize,
+        OrderBy: params.OrderBy,
+        FilterValue: params.FilterValue,
+      },
+    });
+  },
+  create: (rental) => {
+    return axios.post("rentals", rental);
+  },
+  update: (rental) => {
+    return axios.put(`rentals/${rental.id}`, rental);
+  },
+  delete: (rental) => {
+    return axios.delete(`rentals/${rental.id}`, { rental });
+  },
+};

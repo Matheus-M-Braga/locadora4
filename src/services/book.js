@@ -1,16 +1,26 @@
 import axios from "./config";
 
 export default {
-  list: () => {
-    return axios.get("/books");
+  list: (params) => {
+    return axios.get("books", {
+      params: {
+        Page: params.Page,
+        PageSize: params.PageSize,
+        OrderBy: params.OrderBy,
+        FilterValue: params.FilterValue,
+      },
+    });
+  },
+  listSelect: () => {
+    return axios.get("books/getallselect");
   },
   create: (book) => {
-    return axios.post("/books", book);
+    return axios.post("books", book);
   },
   update: (book) => {
-    return axios.put("/books/", book);
+    return axios.put(`books/${book.id}`, book);
   },
   delete: (book) => {
-    return axios.delete('books', { data : book });
+    return axios.delete(`books/${book.id}`, { book });
   },
 };

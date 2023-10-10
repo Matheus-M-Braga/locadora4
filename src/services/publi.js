@@ -7,9 +7,12 @@ export default {
         Page: params.Page,
         PageSize: params.PageSize,
         OrderBy: params.OrderBy,
-        FilterValue: params.FilterValue
+        FilterValue: params.FilterValue,
       },
     });
+  },
+  listSelect: () => {
+    return axios.get("users/getallselect");
   },
   create: (publisher) => {
     return axios.post("publishers", publisher);
