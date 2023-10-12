@@ -89,7 +89,7 @@ export default {
     async getBooks() {
       await Book.listDash()
         .then((response) => {
-          this.books = response.data.response;
+          this.books = response.data.data;
           this.getAvailableBooks();
         })
         .catch((error) => {
@@ -101,7 +101,7 @@ export default {
       await Rental.listDash()
         .then((response) => {
           console.log(response)
-          this.rentals = response.data.response;
+          this.rentals = response.data.data;
           this.totalRentals = this.rentals.length;
           this.lastRent();
           this.getPendingRentals();
@@ -116,11 +116,11 @@ export default {
     async getUsersAndPublishers() {
       try {
         const usersResponse = await User.listSelect();
-        this.Listusers = usersResponse.data.response;
+        this.Listusers = usersResponse.data.data;
         this.users = this.Listusers.length;
 
         const publisResponse = await Publi.listSelect();
-        this.Listpublis = publisResponse.data.response;
+        this.Listpublis = publisResponse.data.data;
         this.publis = this.Listpublis.length;
 
         this.updateCardValues();
