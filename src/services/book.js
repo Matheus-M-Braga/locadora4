@@ -14,6 +14,9 @@ export default {
   listSelect: () => {
     return axios.get("books/getallselect");
   },
+  listDash: () => {
+    return axios.get("books/dash");
+  },
   create: (book) => {
     return axios.post("books", book);
   },
