@@ -13,18 +13,21 @@
           :loading="loadingTable"
           :headers="headers"
           :header-props="headerprops"
-          mobile-breakpoint="890"
           :items="users"
-          :items-per-page="7"
-          class="elevation-1"
-          item-key="id"
+          :server-items-length="totalItems"
+          :items-per-page="pageSize"
+          :page="page"
           :search="search"
           :custom-filter="filter"
           :no-results-text="noDataText"
           :footer-props="{
             'items-per-page-text': 'Registros por página',
-            'items-per-page-options': [7, 10, 15, this.users.length],
+            'items-per-page-options': [7, 10, 15, this.totalItems],
           }"
+          @update:options="handleOptionsUpdate"
+          mobile-breakpoint="890"
+          class="elevation-1"
+          item-key="id"
         >
           <template v-slot:[`item.acoes`]="{ item }">
             <td>
@@ -168,10 +171,16 @@ export default {
         sortByText: "Ordenar Por",
       },
       users: [],
+      id: 0,
       name: "",
       address: "",
       city: "",
       email: "",
+      totalItems: 0,
+      pageSize: 0,
+      OrderBy: "Id",
+      OrderByDesc: false,
+      page: 1,
       dialog: false,
       dialogDelete: false,
       userId: null,
@@ -212,11 +221,12 @@ export default {
     },
   },
   mounted() {
-    this.listUsers();
+    this.getUsers();
   },
   methods: {
     updateSearch(newSearchValue) {
       this.search = newSearchValue;
+      this.getUsers();
     },
     // search
     filter(value, search) {
@@ -226,36 +236,6 @@ export default {
         (typeof value === "string" || typeof value === "number") &&
         value.toString().toLowerCase().indexOf(search.toLowerCase()) !== -1
       );
-    },
-    // Listar
-    async listUsers() {
-      this.loadingTable = true;
-      try {
-        const [usersResponse] = await Promise.all([User.list()]);
-        console.log(usersResponse)
-        const data = usersResponse.data;
-        this.users = data.response.map((user) => ({
-          id: user.id,
-          name: user.name,
-          city: user.city,
-          address: user.address,
-          email: user.email,
-        }));
-        // Ordem por id
-        this.users.sort((a, b) => {
-          if (a.id > b.id) {
-            return 1;
-          } else if (a.id < b.id) {
-            return -1;
-          } else {
-            return 0;
-          }
-        });
-      } catch (error) {
-        console.error("Erro ao buscar informações:", error);
-      } finally {
-        this.loadingTable = false;
-      }
     },
     // Emails já cadastrados
     CheckEmails() {
@@ -267,6 +247,54 @@ export default {
         this.$v.email.$touch();
       }
     },
+    // Listar
+    async getUsers() {
+      this.loadingTable = true;
+      try {
+        const [usersResponse] = await Promise.all([
+          User.list({
+            Page: this.page,
+            PageSize: this.pageSize,
+            OrderBy: this.OrderBy,
+            OrderByDesc: this.OrderByDesc,
+            FilterValue: this.search,
+          }),
+        ]);
+        const data = usersResponse.data;
+        this.users = data.data.map((user) => ({
+          id: user.id,
+          name: user.name,
+          city: user.city,
+          address: user.address,
+          email: user.email,
+        }));
+        this.totalItems = data.totalRegisters;
+      } catch (error) {
+        console.error("Erro ao buscar informações:", error);
+      } finally {
+        this.loadingTable = false;
+      }
+    },
+    handleOptionsUpdate(options) {
+      const sortByMapping = {
+        id: "Id",
+        name: "Name",
+        city: "City",
+        address: "Address",
+        email: "Email"
+      };
+      if (options.sortBy[0] || options.sortDesc[0]) {
+        this.OrderBy = sortByMapping[options.sortBy[0].toLowerCase()];
+        this.OrderByDesc = options.sortDesc[0];
+      } else {
+        this.OrderBy = "Id";
+        this.OrderByDesc = false;
+      }
+      this.pageSize = options.itemsPerPage;
+      this.page = options.page;
+      this.getUsers();  
+    },
+
     // Abrir o modal para adicionar
     openModalCreate() {
       this.ModalTitle = "Adicionar Usuário";
@@ -400,7 +428,7 @@ export default {
               showConfirmButton: false,
               timer: 3500,
             });
-            this.listUsers();
+            this.getUsers();
             this.closeModalDelete();
           } else {
             Swal.fire({
@@ -413,6 +441,7 @@ export default {
         })
         .catch((e) => {
           console.error("Erro ao deletar a usuário:", e);
+          console.log(e)
           Swal.fire({
             icon: "error",
             title: "Erro ao deletar usuário.",

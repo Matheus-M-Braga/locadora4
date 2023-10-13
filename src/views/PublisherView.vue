@@ -185,7 +185,6 @@ export default {
       this.search = newSearchValue;
       this.getPublishers();
     },
-    // Search
     filter(value, search) {
       return (
         value != null &&
@@ -231,7 +230,6 @@ export default {
       }
     },
     handleOptionsUpdate(options) {
-      console.log(options);
       const sortByMapping = {
         id: "Id",
         name: "Name",
