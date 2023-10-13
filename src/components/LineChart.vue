@@ -31,10 +31,10 @@ export default {
     async listRentals(){
       this.loadingChart = true
       try {
-        this.rentals = await Rental.list().finally(() => {
+        this.rentals = await Rental.listDash().finally(() => {
           this.loadingChart = false
-          
         })
+
         const result = this.rentals.data;
         // Mais alugados
         const RentalCount = {}
@@ -62,9 +62,10 @@ export default {
       }
       return label;
     },
-    updateBarChart() {
+    async updateBarChart() {
       const ctx = this.$refs.myChart.getContext("2d");
       const topFour = this.mostrented.slice(0, 4);
+      
       const labels = topFour.map((item) => this.truncateLabel(item.bookname));
       const data = topFour.map((item) => item.quantity);
       new Chart(ctx, {

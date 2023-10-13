@@ -12,7 +12,7 @@ export default {
   data() {
     return {
       rentals: [],
-      loadingChart: false
+      loadingChart: false,
     };
   },
   mounted() {
@@ -33,37 +33,34 @@ export default {
       return `${yyyy}-${mm}-${dd}`;
     },
     async listStatus() {
-      this.loadingChart = true
+      this.loadingChart = true;
       try {
-        const rentals = await Rental.list().finally(() => {
-
+        const rentals = await Rental.listDash().finally(() => {
+          this.loadingChart = false
         });
         const status = {
           "No prazo": 0,
           Atrasado: 0,
           Pendente: 0,
-        }; 
+        };
         const result = rentals.data;
         result.data.forEach((rental) => {
-          if (rental.returnDate != null) {
-            const devolucaoDate = this.parseDate(rental.returnDate);
-            const previsaoDate = this.parseDate(rental.forecastDate);
-            if (devolucaoDate > previsaoDate) {
-              status["Atrasado"]++;
-            } else {
-              status["No prazo"]++;
-            }
-          } else {
+          const rentalStatus = rental.status; 
+          if (rentalStatus === "Atrasado") {
+            status["Atrasado"]++;
+          } else if (rentalStatus === "No prazo") {
+            status["No prazo"]++;
+          } else if (rentalStatus === "Pendente") {
             status["Pendente"]++;
           }
         });
         const statusCountArray = Object.entries(status);
         this.rentals = statusCountArray;
         this.updatePieChart();
-        this.loadingChart = false
+        this.loadingChart = false;
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
-      } 
+      }
     },
     updatePieChart() {
       if (!this.rentals) return;
@@ -100,7 +97,7 @@ export default {
             fontSize: 25,
             fontFamily: "Roboto",
           },
-          maintainAspectRatio: false
+          maintainAspectRatio: false,
         },
       });
     },

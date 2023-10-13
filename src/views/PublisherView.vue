@@ -150,6 +150,7 @@ export default {
       totalItems: 0,
       pageSize: 0,
       OrderBy: "Id",
+      OrderByDesc: false,
       page: 1,
       dialog: false,
       dialogDelete: false,
@@ -193,6 +194,15 @@ export default {
         value.toString().toLowerCase().indexOf(search.toLowerCase()) !== -1
       );
     },
+    CheckNames() {
+      return this.publishers.some((publisher) => publisher.name == this.name);
+    },
+    validateName() {
+      this.nameExists = this.CheckNames(this.name);
+      if (this.nameExists) {
+        this.$v.name.$touch();
+      }
+    },
     // Listar
     async getPublishers() {
       this.loadingTable = true;
@@ -202,10 +212,11 @@ export default {
             Page: this.page,
             PageSize: this.pageSize,
             OrderBy: this.OrderBy,
+            OrderByDesc: this.OrderByDesc,
             FilterValue: this.search,
           }),
         ]);
-        const data = publisherResponse.data.response;
+        const data = publisherResponse.data;
         this.publishers = data.data.map((publisher) => ({
           id: publisher.id,
           name: publisher.name,
@@ -219,7 +230,6 @@ export default {
         this.loadingTable = false;
       }
     },
-
     handleOptionsUpdate(options) {
       console.log(options);
       const sortByMapping = {
@@ -227,23 +237,17 @@ export default {
         name: "Name",
         city: "City",
       };
-      if (options.sortBy[0]) {
+      if (options.sortBy[0] || options.sortDesc[0]) {
         this.OrderBy = sortByMapping[options.sortBy[0].toLowerCase()];
+        this.OrderByDesc = options.sortDesc[0];
+      } else {
+        this.OrderBy = "Id";
+        this.OrderByDesc = false;
       }
       this.pageSize = options.itemsPerPage;
       this.page = options.page;
       this.getPublishers();
     },
-    CheckNames() {
-      return this.publishers.some((publisher) => publisher.name == this.name);
-    },
-    validateName() {
-      this.nameExists = this.CheckNames(this.name);
-      if (this.nameExists) {
-        this.$v.name.$touch();
-      }
-    },
-    // Abrir modal para adicionar
     openModalCreate() {
       this.ModalTitle = "Adicionar Editora";
       this.dialog = true;
@@ -252,7 +256,6 @@ export default {
       this.name = "";
       this.city = "";
     },
-    // Abrir o modal para editar
     openModalEdit(publisher) {
       this.ModalTitle = "Editar Editora";
       this.dialog = true;
@@ -262,11 +265,10 @@ export default {
       this.name = publisher.name;
       this.city = publisher.city;
     },
-    //  Fechar modal
     closeModal() {
       this.dialog = false;
     },
-    confirm() {
+    async confirm() {
       if (!this.nameExists) {
         this.$v.$touch();
         if (!this.$v.$error) {

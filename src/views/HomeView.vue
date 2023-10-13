@@ -100,7 +100,6 @@ export default {
       this.loadingCard = true;
       await Rental.listDash()
         .then((response) => {
-          console.log(response)
           this.rentals = response.data.data;
           this.totalRentals = this.rentals.length;
           this.lastRent();
