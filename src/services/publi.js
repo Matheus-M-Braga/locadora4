@@ -13,7 +13,7 @@ export default {
     });
   },
   listSelect: () => {
-    return axios.get("users/getallselect");
+    return axios.get("publishers/getallselect");
   },
   create: (publisher) => {
     return axios.post("publishers", publisher);

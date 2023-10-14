@@ -13,18 +13,21 @@
           :loading="loadingTable"
           :headers="headers"
           :header-props="headerprops"
-          mobile-breakpoint="890"
           :items="books"
-          :items-per-page="7"
-          class="elevation-1"
-          item-key="id"
+          :server-items-length="totalItems"
+          :items-per-page="pageSize"
+          :page="page"
           :search="search"
           :custom-filter="filter"
           :no-results-text="noDataText"
           :footer-props="{
             'items-per-page-text': 'Registros por página',
-            'items-per-page-options': [7, 10, 15, this.books.length],
+            'items-per-page-options': [7, 10, 15, this.totalItems],
           }"
+          @update:options="handleOptionsUpdate"
+          mobile-breakpoint="890"
+          class="elevation-1"
+          item-key="id"
         >
           <template v-slot:[`item.acoes`]="{ item }">
             <td>
@@ -71,7 +74,7 @@
               <v-col cols="12">
                 <v-select
                   v-model="publisher"
-                  :items="listPublishers"
+                  :items="publishers"
                   item-text="name"
                   label="Editora"
                   required
@@ -180,13 +183,19 @@ export default {
         sortByText: "Ordenar Por",
       },
       books: [],
-      listPublishers: [],
+      publishers: [],
+      id: 0,
       name: "",
       author: "",
-      publisher: "",
+      publisher: {},
       release: 0,
       quantity: 0,
       rented: 0,
+      totalItems: 0,
+      pageSize: 0,
+      OrderBy: "Id",
+      OrderByDesc: false,
+      page: 1,
       dialog: false,
       dialogDelete: false,
       bookId: null,
@@ -221,8 +230,7 @@ export default {
       const errors = [];
       if (!this.$v.release.$dirty) return errors;
       !this.$v.release.maxLength && errors.push("O limite é de 4 dígitos.");
-      !this.$v.release.required &&
-        errors.push("Informe o ano de Lançamento.");
+      !this.$v.release.required && errors.push("Informe o ano de Lançamento.");
       return errors;
     },
     AmountError() {
@@ -234,11 +242,12 @@ export default {
     },
   },
   mounted() {
-    this.listBooks();
+    this.getBooks();
   },
   methods: {
     updateSearch(newSearchValue) {
       this.search = newSearchValue;
+      this.getBooks();
     },
     // search
     filter(value, search) {
@@ -249,22 +258,36 @@ export default {
         value.toString().toLowerCase().indexOf(search.toLowerCase()) !== -1
       );
     },
-    // Listar
-    async listBooks() {
+    CheckNames() {
+      return this.books.some((book) => book.name == this.name);
+    },
+    validateName() {
+      this.nameExists = this.CheckNames(this.name);
+      if (this.nameExists) {
+        this.$v.name.$touch();
+      }
+    },
+    // getar
+    async getBooks() {
       this.loadingTable = true;
       try {
         const [booksResponse, publishersResponse] = await Promise.all([
-          Book.list(),
-          Publisher.list(),
+          Book.list({
+            Page: this.page,
+            PageSize: this.pageSize,
+            OrderBy: this.OrderBy,
+            OrderByDesc: this.OrderByDesc,
+            FilterValue: this.search,
+          }),
+          Publisher.listSelect(),
         ]);
         const data = booksResponse.data;
         const publishers_data = publishersResponse.data;
 
-        this.listPublishers = publishers_data.data.map((publisher) => ({
+        this.publishers = publishers_data.data.map((publisher) => ({
           id: publisher.id,
           name: publisher.name,
         }));
-
         this.books = data.data.map((book) => ({
           id: book.id,
           name: book.name,
@@ -274,30 +297,35 @@ export default {
           quantity: book.quantity,
           rented: book.rented,
         }));
-        // Ordem por id
-        this.books.sort((a, b) => {
-          if (a.id > b.id) {
-            return 1;
-          } else if (a.id < b.id) {
-            return -1;
-          } else {
-            return 0;
-          }
-        });
+
+        this.totalItems = data.totalRegisters;
       } catch (error) {
         console.error("Erro ao buscar informações:", error);
       } finally {
         this.loadingTable = false;
       }
     },
-    CheckNames() {
-      return this.books.some((book) => book.name == this.name);
-    },
-    validateName() {
-      this.nameExists = this.CheckNames(this.name);
-      if (this.nameExists) {
-        this.$v.name.$touch();
+    handleOptionsUpdate(options) {
+      console.log(options);
+      const sortByMapping = {
+        id: "Id",
+        name: "Name",
+        author: "Author",
+        publisher: "Publisher",
+        release: "Release",
+        quantity: "Quantity",
+        rented: "Rented",
+      };
+      if (options.sortBy[0] || options.sortDesc[0]) {
+        this.OrderBy = sortByMapping[options.sortBy[0].toLowerCase()];
+        this.OrderByDesc = options.sortDesc[0];
+      } else {
+        this.OrderBy = "Id";
+        this.OrderByDesc = false;
       }
+      this.pageSize = options.itemsPerPage;
+      this.page = options.page;
+      this.getBooks();
     },
     // Abrir o modal para adicionar
     openModalCreate() {
@@ -317,8 +345,8 @@ export default {
       this.dialog = true;
       this.$v.$reset();
 
-      const selectedPubli = this.listPublishers.find(
-        (publisher) => publisher.name === book.publisher.name
+      const selectedPubli = this.publishers.find(
+        (publisher) => publisher.id === book.publisher.id
       );
       this.bookId = book.id;
       this.name = book.name;
@@ -339,13 +367,14 @@ export default {
         if (!this.$v.$error) {
           // Identifica qual modal foi ativado (Add)
           if (this.ModalTitle === "Adicionar Livro") {
-            const selectedPubli = this.listPublishers.find(
+            const selectedPubli = this.publishers.find(
               (publisher) => publisher.name === this.publisher
             );
+            console.log(selectedPubli)
             const newbook = {
               name: this.name,
               author: this.author,
-              publisher: selectedPubli,
+              publisherId: selectedPubli.id,
               release: this.release,
               quantity: this.quantity,
               rented: "0",
@@ -360,7 +389,7 @@ export default {
                   timer: 3500,
                 });
                 this.closeModal();
-                this.listBooks();
+                this.getBooks();
               })
               .catch((error) => {
                 console.error("Erro ao adicionar o livro:", error);
@@ -375,14 +404,14 @@ export default {
           }
           // Caso contrário, edita
           else {
-            const selectedPubli = this.listPublishers.find(
+            const selectedPubli = this.publishers.find(
               (publisher) => publisher.name === this.publisher
             );
             const editedbook = {
               id: this.bookId,
               name: this.name,
               author: this.author,
-              publisher: selectedPubli ? { ...selectedPubli } : this.publisher,
+              publisherId: selectedPubli.id,
               release: this.release,
               quantity: this.quantity,
               rented: this.rented,
@@ -403,7 +432,7 @@ export default {
                   timer: 3500,
                 });
                 this.closeModal();
-                this.listBooks();
+                this.getBooks();
               })
               .catch((error) => {
                 console.error("Erro ao atualizar livro:", error);
@@ -449,7 +478,7 @@ export default {
               showConfirmButton: false,
               timer: 3500,
             });
-            this.listBooks();
+            this.getBooks();
             this.closeModalDelete();
           }
         })
