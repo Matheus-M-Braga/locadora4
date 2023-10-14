@@ -135,7 +135,7 @@
 </template>
 
 <script>
-import User from "@/services/users";
+import User from "@/services/user";
 import Swal from "sweetalert2";
 import { validationMixin } from "vuelidate";
 import { required, maxLength, email } from "vuelidate/lib/validators";
@@ -228,7 +228,6 @@ export default {
       this.search = newSearchValue;
       this.getUsers();
     },
-    // search
     filter(value, search) {
       return (
         value != null &&
@@ -237,7 +236,6 @@ export default {
         value.toString().toLowerCase().indexOf(search.toLowerCase()) !== -1
       );
     },
-    // Emails já cadastrados
     CheckEmails() {
       return this.users.some((user) => user.email == this.email);
     },
@@ -247,7 +245,6 @@ export default {
         this.$v.email.$touch();
       }
     },
-    // Listar
     async getUsers() {
       this.loadingTable = true;
       try {
@@ -294,8 +291,6 @@ export default {
       this.page = options.page;
       this.getUsers();  
     },
-
-    // Abrir o modal para adicionar
     openModalCreate() {
       this.ModalTitle = "Adicionar Usuário";
       this.dialog = true;
@@ -306,7 +301,6 @@ export default {
       this.city = "";
       this.email = "";
     },
-    // Abrir o modal para editar
     openModalEdit(user) {
       this.ModalTitle = "Editar Usuário";
       this.dialog = true;
@@ -318,16 +312,13 @@ export default {
       this.city = user.city;
       this.email = user.email;
     },
-    // Fechar modal
     closeModal() {
       this.dialog = false;
     },
-    // confirm
     confirm() {
       if (!this.emailExists) {
         this.$v.$touch();
         if (!this.$v.$error) {
-          // Identica qual modal foi ativado (Add)
           if (this.ModalTitle === "Adicionar Usuário") {
             const newuser = {
               name: this.name,
@@ -351,13 +342,12 @@ export default {
                 Swal.fire({
                   icon: "error",
                   title: "Erro ao adicionar usuário.",
-                  text: error.response.data.error,
+                  text: error.response.data.message,
                   showConfirmButton: false,
                   timer: 3500,
                 });
               });
           }
-          // Caso contrário, edita
           else {
             const editeduser = {
               id: this.userId,
@@ -389,7 +379,7 @@ export default {
                 Swal.fire({
                   icon: "success",
                   title: "Erro ao atualizar usuário.",
-                  text: error.response.data.error,
+                  text: error.response.data.message,
                   showConfirmButton: false,
                   timer: 3500,
                 });
@@ -399,7 +389,6 @@ export default {
         }
       }
     },
-    // Excluir
     openModalDelete(user) {
       this.userId = user.id;
       this.name = user.name;
@@ -439,13 +428,12 @@ export default {
             });
           }
         })
-        .catch((e) => {
-          console.error("Erro ao deletar a usuário:", e);
-          console.log(e)
+        .catch((error) => {
+          console.error("Erro ao deletar a usuário:", error);
           Swal.fire({
             icon: "error",
             title: "Erro ao deletar usuário.",
-            text: e.response.data.error,
+            text: error.response.data.message,
             showConfirmButton: false,
             timer: 3500,
           });

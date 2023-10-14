@@ -144,7 +144,7 @@
 
 <script>
 import Book from "@/services/book";
-import Publisher from "@/services/publi";
+import Publisher from "@/services/publisher";
 import Swal from "sweetalert2";
 import { validationMixin } from "vuelidate";
 import { required, maxLength } from "vuelidate/lib/validators";
@@ -204,7 +204,6 @@ export default {
     };
   },
   computed: {
-    // validacao
     NameError() {
       const errors = [];
       if (!this.$v.name.$dirty) return errors;
@@ -249,7 +248,6 @@ export default {
       this.search = newSearchValue;
       this.getBooks();
     },
-    // search
     filter(value, search) {
       return (
         value != null &&
@@ -267,7 +265,6 @@ export default {
         this.$v.name.$touch();
       }
     },
-    // getar
     async getBooks() {
       this.loadingTable = true;
       try {
@@ -288,6 +285,7 @@ export default {
           id: publisher.id,
           name: publisher.name,
         }));
+
         this.books = data.data.map((book) => ({
           id: book.id,
           name: book.name,
@@ -306,7 +304,6 @@ export default {
       }
     },
     handleOptionsUpdate(options) {
-      console.log(options);
       const sortByMapping = {
         id: "Id",
         name: "Name",
@@ -327,7 +324,6 @@ export default {
       this.page = options.page;
       this.getBooks();
     },
-    // Abrir o modal para adicionar
     openModalCreate() {
       this.ModalTitle = "Adicionar Livro";
       this.dialog = true;
@@ -339,7 +335,6 @@ export default {
       this.release = "";
       this.quantity = "";
     },
-    // Abrir o modal para editar
     openModalEdit(book) {
       this.ModalTitle = "Editar livro";
       this.dialog = true;
@@ -356,21 +351,18 @@ export default {
       this.quantity = book.quantity;
       this.rented = book.rented;
     },
-    // Fechar modal
     closeModal() {
       this.dialog = false;
     },
-    // confirm
     confirm() {
       if (!this.nameExists) {
         this.$v.$touch();
         if (!this.$v.$error) {
-          // Identifica qual modal foi ativado (Add)
           if (this.ModalTitle === "Adicionar Livro") {
             const selectedPubli = this.publishers.find(
               (publisher) => publisher.name === this.publisher
             );
-            console.log(selectedPubli)
+            console.log(selectedPubli);
             const newbook = {
               name: this.name,
               author: this.author,
@@ -401,9 +393,7 @@ export default {
                   timer: 3500,
                 });
               });
-          }
-          // Caso contrário, edita
-          else {
+          } else {
             const selectedPubli = this.publishers.find(
               (publisher) => publisher.name === this.publisher
             );
@@ -448,7 +438,6 @@ export default {
         }
       }
     },
-    // Excluir
     openModalDelete(book) {
       this.bookId = book.id;
       this.name = book.name;

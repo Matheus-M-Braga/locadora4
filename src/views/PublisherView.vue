@@ -113,7 +113,7 @@
 </template>
 
 <script>
-import Publisher from "@/services/publi";
+import Publisher from "@/services/publisher";
 import Swal from "sweetalert2";
 import { validationMixin } from "vuelidate";
 import { required } from "vuelidate/lib/validators";

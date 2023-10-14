@@ -23,9 +23,9 @@
 <script>
 import LineChart from "@/components/LineChart";
 import PieChart from "@/components/PieChart";
-import User from "@/services/users";
+import User from "@/services/user";
 import Book from "@/services/book";
-import Publi from "@/services/publi";
+import Publisher from "@/services/publisher";
 import Rental from "@/services/rental";
 export default {
   data: () => ({
@@ -118,7 +118,7 @@ export default {
         this.Listusers = usersResponse.data.data;
         this.users = this.Listusers.length;
 
-        const publisResponse = await Publi.listSelect();
+        const publisResponse = await Publisher.listSelect();
         this.Listpublis = publisResponse.data.data;
         this.publis = this.Listpublis.length;
 
@@ -131,7 +131,7 @@ export default {
       this.availableBooks = await this.books.reduce((total, book) => total + book.quantity, 0);
     },
     async getPendingRentals() {
-      const filtereds = this.rentals.filter((rental) => !rental.returnDate);
+      const filtereds = this.rentals.filter((rental) => rental.status == "Pendente");
       this.rented = filtereds.length;
     },
     async lastRent() {

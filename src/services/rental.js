@@ -4,10 +4,11 @@ export default {
   list: (params) => {
     return axios.get("rentals", {
       params: {
-        FilterValue: params.FilterValue,
         Page: params.Page,
         PageSize: params.PageSize,
         OrderBy: params.OrderBy,
+        OrderByDesc: params.OrderByDesc,
+        FilterValue: params.FilterValue,
       },
     });
   },

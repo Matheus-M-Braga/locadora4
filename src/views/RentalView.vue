@@ -12,16 +12,18 @@
           dark
           :loading="loadingTable"
           :headers="headers"
-          :items="filteredRentals"
-          :items-per-page="7"
-          mobile-breakpoint="890"
-          class="elevation-1"
-          :no-results-text="'Nenhum registro encontrado'"
           :header-props="headerprops"
+          :items="filteredRentals"
+          :server-items-length="totalItems"
+          :items-per-page="pageSize"
+          :no-results-text="'Nenhum registro encontrado'"
           :footer-props="{
             'items-per-page-text': 'Registros por página',
-            'items-per-page-options': [7, 10, 15, this.rentals.length],
+            'items-per-page-options': [7, 10, 15, this.totalItems],
           }"
+          @update:options="handleOptionsUpdate"
+          mobile-breakpoint="890"
+          class="elevation-1"
         >
           <template v-slot:[`item.status`]="{ item }">
             <td>
@@ -63,7 +65,7 @@
               <v-col cols="12">
                 <v-select
                   v-model="book"
-                  :items="listBooks"
+                  :items="books"
                   item-text="name"
                   label="Livro"
                   required
@@ -75,7 +77,7 @@
               <v-col cols="12">
                 <v-select
                   v-model="user"
-                  :items="listUsers"
+                  :items="users"
                   item-text="name"
                   label="Usuário"
                   required
@@ -169,7 +171,7 @@
 <script>
 import Rental from "@/services/rental";
 import Book from "@/services/book";
-import User from "@/services/users";
+import User from "@/services/user";
 import Swal from "sweetalert2";
 import { validationMixin } from "vuelidate";
 import { required } from "vuelidate/lib/validators";
@@ -207,14 +209,20 @@ export default {
         sortByText: "Ordenar Por",
       },
       rentals: [],
-      listBooks: [],
-      listUsers: [],
+      books: [],
+      users: [],
+      id: 0,
       book: "",
       user: "",
       rentalDate: "",
       forecastDate: "",
       returnDate: "",
       status: "",
+      totalItems: 0,
+      pageSize: 0,
+      OrderBy: "Id",
+      OrderByDesc: false,
+      page: 1,
       dialog: false,
       dialogDelete: false,
       dialogDevol: false,
@@ -262,11 +270,12 @@ export default {
     },
   },
   mounted() {
-    this.listAlugs();
+    this.getRentals();
   },
   methods: {
     updateSearch(newSearchValue) {
       this.search = newSearchValue;
+      this.getRentals();
     },
     MaxDate() {
       const today = new Date();
@@ -310,21 +319,31 @@ export default {
       );
       return brazilCurrentDate.toISOString().substr(0, 10);
     },
-    async listAlugs() {
+    async getRentals() {
       this.loadingTable = true;
       try {
         const [booksResponse, rentalsResponse, usersResponse] =
-          await Promise.all([Book.list(), Rental.list(), User.list()]);
+          await Promise.all([
+            Book.listSelect(),
+            Rental.list({
+              Page: this.page,
+              PageSize: this.pageSize,
+              OrderBy: this.OrderBy,
+              OrderByDesc: this.OrderByDesc,
+              FilterValue: this.search,
+            }),
+            User.listSelect(),
+          ]);
         const data = rentalsResponse.data;
         const dataBook = booksResponse.data;
         const dataUser = usersResponse.data;
 
-        this.listBooks = dataBook.data.map((livro) => ({
+        this.books = dataBook.data.map((livro) => ({
           id: livro.id,
           name: livro.name,
         }));
 
-        this.listUsers = dataUser.data.map((usuario) => ({
+        this.users = dataUser.data.map((usuario) => ({
           id: usuario.id,
           name: usuario.name,
         }));
@@ -354,6 +373,7 @@ export default {
             status: statusInfo,
           };
         });
+        this.totalItems = data.TotalRegisters;
         // Pendentes primeiro
         this.rentals.sort((a, b) => {
           if (a.status === "Pendente" && b.status !== "Pendente") {
@@ -369,6 +389,27 @@ export default {
       } finally {
         this.loadingTable = false;
       }
+    },
+    handleOptionsUpdate(options) {
+      const sortByMapping = {
+        id: "Id",
+        book: "Book",
+        user: "User",
+        rentalDate: "RentalDate",
+        forecastDate: "ForecastDate",
+        returnDate: "ReturnDate",
+        status: "Status",
+      };
+      if (options.sortBy[0] || options.sortDesc[0]) {
+        this.OrderBy = sortByMapping[options.sortBy[0].toLowerCase()];
+        this.OrderByDesc = options.sortDesc[0];
+      } else {
+        this.OrderBy = "Id";
+        this.OrderByDesc = false;
+      }
+      this.pageSize = options.itemsPerPage;
+      this.page = options.page;
+      this.getRentals();
     },
     openModalCreate() {
       this.ModalTitle = "Adicionar Aluguel";
@@ -389,16 +430,16 @@ export default {
       if (!this.$v.$error) {
         // Identifica qual modal foi ativado (Add)
         if (this.ModalTitle === "Adicionar Aluguel") {
-          const selectedBook = this.listBooks.find(
+          const selectedBook = this.books.find(
             (livro) => livro.name === this.book
           );
-          const selectedUser = this.listUsers.find(
+          const selectedUser = this.users.find(
             (usuario) => usuario.name === this.user
           );
 
           const novoAlug = {
-            book: selectedBook,
-            user: selectedUser,
+            bookId: selectedBook.id,
+            userId: selectedUser.id,
             rentalDate: this.rentalDate,
             forecastDate: this.forecastDate,
           };
@@ -412,7 +453,7 @@ export default {
                 timer: 3500,
               });
               this.closeModal();
-              this.listAlugs();
+              this.getRentals();
             })
             .catch((error) => {
               console.error("Erro ao adicionar o aluguel:", error);
@@ -435,12 +476,8 @@ export default {
       this.dialogDelete = false;
     },
     confirmDelete(rental) {
-      const selectedBook = this.listBooks.find(
-        (book) => book.name === rental.book
-      );
-      const selectedUser = this.listUsers.find(
-        (user) => user.name === rental.user
-      );
+      const selectedBook = this.books.find((book) => book.name === rental.book);
+      const selectedUser = this.users.find((user) => user.name === rental.user);
       const deleteAlug = {
         id: rental.id,
         book: selectedBook,
@@ -459,7 +496,7 @@ export default {
               showConfirmButton: false,
               timer: 3500,
             });
-            this.listAlugs();
+            this.getRentals();
             this.closeModalDelete();
           } else {
             Swal.fire({
@@ -487,12 +524,8 @@ export default {
       this.update = { ...rental };
     },
     confirmDevol(rental) {
-      const selectedBook = this.listBooks.find(
-        (book) => book.name === rental.book
-      );
-      const selectedUser = this.listUsers.find(
-        (user) => user.name === rental.user
-      );
+      const selectedBook = this.books.find((book) => book.name === rental.book);
+      const selectedUser = this.users.find((user) => user.name === rental.user);
       const returnedRental = {
         id: rental.id,
         book: selectedBook ? { ...selectedBook } : this.book,
@@ -517,7 +550,7 @@ export default {
             timer: 3500,
           });
           this.closeModalDevol();
-          this.listAlugs();
+          this.getRentals();
         })
         .catch((error) => {
           console.error("Erro ao devolver aluguel:", error);
