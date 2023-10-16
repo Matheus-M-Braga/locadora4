@@ -13,10 +13,11 @@
           :loading="loadingTable"
           :headers="headers"
           :header-props="headerprops"
-          :items="filteredRentals"
+          :items="rentals"
           :server-items-length="totalItems"
           :items-per-page="pageSize"
-          :no-results-text="'Nenhum registro encontrado'"
+          :no-results-text="noDataText"
+          :no-data-text="noDataText"
           :footer-props="{
             'items-per-page-text': 'Registros por página',
             'items-per-page-options': [7, 10, 15, this.totalItems],
@@ -256,18 +257,6 @@ export default {
         errors.push("Informe a previsão de devolução.");
       return errors;
     },
-    filteredRentals() {
-      const searchValue = this.search.toLowerCase();
-      return this.rentals.filter((rental) => {
-        for (const prop in rental) {
-          const propValue = rental[prop].toString().toLowerCase();
-          if (propValue.includes(searchValue)) {
-            return true;
-          }
-        }
-        return false;
-      });
-    },
   },
   mounted() {
     this.getRentals();
@@ -386,6 +375,9 @@ export default {
         });
       } catch (error) {
         console.error("Erro ao buscar informações:", error);
+        if (error.response.data.message === "Nenhum registro encontrado.") {
+          this.rentals = [];
+        }
       } finally {
         this.loadingTable = false;
       }

@@ -36,21 +36,26 @@ export default {
         icon: "mdi-book-sync",
         value: "",
       },
-      { id: 2, title: "Livros disponíveis", icon: "mdi-book-check", value: "" },
       {
-        id: 3,
-        title: "Livros alugados",
+        id: 1,
+        title: "Aluguéis Ativos",
         icon: "mdi-book-open-variant",
         value: "",
       },
       {
-        id: 4,
+        id: 2,
         title: "Total de Aluguéis",
         icon: "mdi-book-account",
         value: "",
       },
-      { id: 5, title: "Usuários cadastrados", icon: "mdi-account", value: "" },
-      { id: 6, title: "Editoras cadastradas", icon: "mdi-pencil", value: "" },
+      {
+        id: 3,
+        title: "Livros disponíveis",
+        icon: "mdi-book-check",
+        value: "",
+      },
+      { id: 4, title: "Usuários cadastrados", icon: "mdi-account", value: "" },
+      { id: 5, title: "Editoras cadastradas", icon: "mdi-pencil", value: "" },
     ],
     loadingCard: false,
     books: [],
@@ -68,21 +73,31 @@ export default {
     rentals: [],
     lastRented: "",
   }),
-  mounted() {
-    this.getBooks();
-    this.getRentals();
-    this.getUsersAndPublishers();
+  async mounted() {
+    await Promise.all([
+      this.getBooks(),
+      this.getRentals(),
+      this.getUsersAndPublishers(),
+    ]);
+
+    await Promise.all([
+      this.getAvailableBooks(),
+      this.getPendingRentals(),
+      this.lastRent(),
+    ]);
+
+    this.updateCardValues();
   },
   components: {
     LineChart,
     PieChart,
   },
   methods: {
-    async updateCardValues() {
+    updateCardValues() {
       this.cards[0].value = this.lastRented;
-      this.cards[1].value = this.availableBooks;
-      this.cards[2].value = this.rented;
-      this.cards[3].value = this.totalRentals;
+      this.cards[1].value = this.rented;
+      this.cards[2].value = this.totalRentals;
+      this.cards[3].value = this.availableBooks;
       this.cards[4].value = this.Listusers.length;
       this.cards[5].value = this.publis;
     },
@@ -90,7 +105,6 @@ export default {
       await Book.listDash()
         .then((response) => {
           this.books = response.data.data;
-          this.getAvailableBooks();
         })
         .catch((error) => {
           console.error("Erro na busca de livros", error);
@@ -102,8 +116,6 @@ export default {
         .then((response) => {
           this.rentals = response.data.data;
           this.totalRentals = this.rentals.length;
-          this.lastRent();
-          this.getPendingRentals();
         })
         .catch((error) => {
           console.error("Erro na busca de aluguéis", error);
@@ -121,17 +133,20 @@ export default {
         const publisResponse = await Publisher.listSelect();
         this.Listpublis = publisResponse.data.data;
         this.publis = this.Listpublis.length;
-
-        this.updateCardValues();
       } catch (error) {
         console.error("Erro ao buscar usuários e editoras", error);
       }
     },
     async getAvailableBooks() {
-      this.availableBooks = await this.books.reduce((total, book) => total + book.quantity, 0);
+      this.availableBooks = await this.books.reduce(
+        (total, book) => total + book.quantity,
+        0
+      );
     },
     async getPendingRentals() {
-      const filtereds = this.rentals.filter((rental) => rental.status == "Pendente");
+      const filtereds = this.rentals.filter(
+        (rental) => rental.status == "Pendente"
+      );
       this.rented = filtereds.length;
     },
     async lastRent() {

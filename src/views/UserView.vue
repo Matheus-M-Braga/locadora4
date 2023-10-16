@@ -20,6 +20,7 @@
           :search="search"
           :custom-filter="filter"
           :no-results-text="noDataText"
+          :no-data-text="noDataText"
           :footer-props="{
             'items-per-page-text': 'Registros por página',
             'items-per-page-options': [7, 10, 15, this.totalItems],
@@ -268,6 +269,9 @@ export default {
         this.totalItems = data.totalRegisters;
       } catch (error) {
         console.error("Erro ao buscar informações:", error);
+        if (error.response.data.message === "Nenhum registro encontrado.") {
+          this.users = [];
+        }
       } finally {
         this.loadingTable = false;
       }
@@ -278,7 +282,7 @@ export default {
         name: "Name",
         city: "City",
         address: "Address",
-        email: "Email"
+        email: "Email",
       };
       if (options.sortBy[0] || options.sortDesc[0]) {
         this.OrderBy = sortByMapping[options.sortBy[0].toLowerCase()];
@@ -289,7 +293,7 @@ export default {
       }
       this.pageSize = options.itemsPerPage;
       this.page = options.page;
-      this.getUsers();  
+      this.getUsers();
     },
     openModalCreate() {
       this.ModalTitle = "Adicionar Usuário";
@@ -347,8 +351,7 @@ export default {
                   timer: 3500,
                 });
               });
-          }
-          else {
+          } else {
             const editeduser = {
               id: this.userId,
               name: this.name,

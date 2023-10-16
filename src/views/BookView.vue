@@ -20,6 +20,7 @@
           :search="search"
           :custom-filter="filter"
           :no-results-text="noDataText"
+          :no-data-text="noDataText"
           :footer-props="{
             'items-per-page-text': 'Registros por página',
             'items-per-page-options': [7, 10, 15, this.totalItems],
@@ -299,6 +300,9 @@ export default {
         this.totalItems = data.totalRegisters;
       } catch (error) {
         console.error("Erro ao buscar informações:", error);
+        if (error.response.data.message === "Nenhum registro encontrado.") {
+          this.books = [];
+        }
       } finally {
         this.loadingTable = false;
       }
