@@ -260,6 +260,8 @@ export default {
   },
   mounted() {
     this.getRentals();
+    this.getBooks();
+    this.getUsers();
   },
   methods: {
     updateSearch(newSearchValue) {
@@ -311,45 +313,18 @@ export default {
     async getRentals() {
       this.loadingTable = true;
       try {
-        const [booksResponse, rentalsResponse, usersResponse] =
-          await Promise.all([
-            Book.listSelect(),
-            Rental.list({
-              Page: this.page,
-              PageSize: this.pageSize,
-              OrderBy: this.OrderBy,
-              OrderByDesc: this.OrderByDesc,
-              FilterValue: this.search,
-            }),
-            User.listSelect(),
-          ]);
+        const [rentalsResponse] = await Promise.all([
+          Rental.list({
+            Page: this.page,
+            PageSize: this.pageSize,
+            OrderBy: this.OrderBy,
+            OrderByDesc: this.OrderByDesc,
+            FilterValue: this.search,
+          }),
+        ]);
         const data = rentalsResponse.data;
-        const dataBook = booksResponse.data;
-        const dataUser = usersResponse.data;
-
-        this.books = dataBook.data.map((livro) => ({
-          id: livro.id,
-          name: livro.name,
-        }));
-
-        this.users = dataUser.data.map((usuario) => ({
-          id: usuario.id,
-          name: usuario.name,
-        }));
 
         this.rentals = data.data.map((rental) => {
-          const devolucaoDate = rental.returnDate;
-          const previsaoDate = rental.forecastDate;
-          let statusInfo;
-          if (devolucaoDate !== null) {
-            if (devolucaoDate > previsaoDate) {
-              statusInfo = "Atrasado";
-            } else {
-              statusInfo = "No prazo";
-            }
-          } else {
-            statusInfo = "Pendente";
-          }
           return {
             id: rental.id,
             book: rental.book.name,
@@ -359,7 +334,7 @@ export default {
             returnDate: rental.returnDate
               ? this.formatDate(rental.returnDate)
               : "...",
-            status: statusInfo,
+            status: rental.status,
           };
         });
         this.totalItems = data.TotalRegisters;
@@ -375,11 +350,39 @@ export default {
         });
       } catch (error) {
         console.error("Erro ao buscar informações:", error);
-        if (error.response.data.message === "Nenhum registro encontrado.") {
+        if (
+          error.response.data.message.includes("Nenhum registro encontrado.")
+        ) {
           this.rentals = [];
         }
       } finally {
         this.loadingTable = false;
+      }
+    },
+    async getBooks() {
+      try {
+        const [booksResponse] = await Promise.all([Book.listSelect()]);
+        const data = booksResponse.data;
+
+        this.books = data.data.map((book) => ({
+          id: book.id,
+          name: book.name,
+        }));
+      } catch (error) {
+        console.error("Erro ao buscar informações:", error);
+      }
+    },
+    async getUsers() {
+      try {
+        const [usersResponse] = await Promise.all([User.listSelect()]);
+        const data = usersResponse.data;
+
+        this.users = data.data.map((book) => ({
+          id: book.id,
+          name: book.name,
+        }));
+      } catch (error) {
+        console.error("Erro ao buscar informações:", error);
       }
     },
     handleOptionsUpdate(options) {
