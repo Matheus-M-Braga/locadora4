@@ -18,7 +18,6 @@
           :items-per-page="pageSize"
           :page="page"
           :search="search"
-          :custom-filter="filter"
           :no-results-text="noDataText"
           :no-data-text="noDataText"
           :footer-props="{
@@ -157,7 +156,7 @@ export default {
       dialogDelete: false,
       publisherId: null,
       nameExists: false,
-      loadingTable: false,
+      loadingTable: true,
     };
   },
   computed: {
@@ -186,14 +185,6 @@ export default {
       this.search = newSearchValue;
       this.getPublishers();
     },
-    filter(value, search) {
-      return (
-        value != null &&
-        search != null &&
-        (typeof value === "string" || typeof value === "number") &&
-        value.toString().toLowerCase().indexOf(search.toLowerCase()) !== -1
-      );
-    },
     CheckNames() {
       return this.publishers.some((publisher) => publisher.name == this.name);
     },
@@ -203,30 +194,22 @@ export default {
         this.$v.name.$touch();
       }
     },
-    // Listar
     async getPublishers() {
-      this.loadingTable = true;
       try {
-        const [publisherResponse] = await Promise.all([
-          Publisher.list({
-            Page: this.page,
-            PageSize: this.pageSize,
-            OrderBy: this.OrderBy,
-            OrderByDesc: this.OrderByDesc,
-            FilterValue: this.search,
-          }),
-        ]);
-        const data = publisherResponse.data;
-        this.publishers = data.data.map((publisher) => ({
-          id: publisher.id,
-          name: publisher.name,
-          city: publisher.city,
-        }));
-
-        this.totalItems = data.totalRegisters;
+        const response = await Publisher.list({
+          Page: this.page,
+          PageSize: this.pageSize,
+          OrderBy: this.OrderBy,
+          OrderByDesc: this.OrderByDesc,
+          FilterValue: this.search,
+        });
+        this.publishers = response.data.data
+        this.totalItems = response.data.totalRegisters;
       } catch (error) {
-        console.error("Erro ao buscar informações:", error.response.data);
-        if (error.response.data.message === "Nenhum registro encontrado." ) {
+        console.error("Erro ao buscar informações:", error);
+        if (
+          error.response.data.message.includes("Nenhum registro encontrado.")
+        ) {
           this.publishers = [];
         }
       } finally {
@@ -274,7 +257,6 @@ export default {
       if (!this.nameExists) {
         this.$v.$touch();
         if (!this.$v.$error) {
-          // Identifica qual modal foi ativado (Add)
           if (this.ModalTitle === "Adicionar Editora") {
             const newpublisher = {
               name: this.name,
@@ -303,7 +285,6 @@ export default {
                 });
               });
           }
-          // Caso contrário, edita =)
           else {
             const editedpublisher = {
               id: this.publisherId,

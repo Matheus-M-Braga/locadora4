@@ -18,7 +18,6 @@
           :items-per-page="pageSize"
           :page="page"
           :search="search"
-          :custom-filter="filter"
           :no-results-text="noDataText"
           :no-data-text="noDataText"
           :footer-props="{
@@ -155,7 +154,6 @@ export default {
   components: {
     TableTop,
   },
-
   mixins: [validationMixin],
   validations: {
     name: { required },
@@ -201,7 +199,7 @@ export default {
       dialogDelete: false,
       bookId: null,
       nameExists: false,
-      loadingTable: false,
+      loadingTable: true,
     };
   },
   computed: {
@@ -243,19 +241,12 @@ export default {
   },
   mounted() {
     this.getBooks();
+    this.getPublishers();
   },
   methods: {
     updateSearch(newSearchValue) {
       this.search = newSearchValue;
       this.getBooks();
-    },
-    filter(value, search) {
-      return (
-        value != null &&
-        search != null &&
-        (typeof value === "string" || typeof value === "number") &&
-        value.toString().toLowerCase().indexOf(search.toLowerCase()) !== -1
-      );
     },
     CheckNames() {
       return this.books.some((book) => book.name == this.name);
@@ -267,44 +258,31 @@ export default {
       }
     },
     async getBooks() {
-      this.loadingTable = true;
       try {
-        const [booksResponse, publishersResponse] = await Promise.all([
-          Book.list({
-            Page: this.page,
-            PageSize: this.pageSize,
-            OrderBy: this.OrderBy,
-            OrderByDesc: this.OrderByDesc,
-            FilterValue: this.search,
-          }),
-          Publisher.listSelect(),
-        ]);
-        const data = booksResponse.data;
-        const publishers_data = publishersResponse.data;
-
-        this.publishers = publishers_data.data.map((publisher) => ({
-          id: publisher.id,
-          name: publisher.name,
-        }));
-
-        this.books = data.data.map((book) => ({
-          id: book.id,
-          name: book.name,
-          author: book.author,
-          publisher: book.publisher,
-          release: book.release,
-          quantity: book.quantity,
-          rented: book.rented,
-        }));
-
-        this.totalItems = data.totalRegisters;
+        const response = await Book.list({
+          Page: this.page,
+          PageSize: this.pageSize,
+          OrderBy: this.OrderBy,
+          OrderByDesc: this.OrderByDesc,
+          FilterValue: this.search,
+        });
+        this.books = response.data.data;
+        this.totalItems = response.data.totalRegisters;
       } catch (error) {
         console.error("Erro ao buscar informações:", error);
-        if (error.response.data.message === "Nenhum registro encontrado.") {
+        if (error.response.data.message.includes("Nenhum registro encontrado.")) {
           this.books = [];
         }
       } finally {
         this.loadingTable = false;
+      }
+    },
+    async getPublishers() {
+      try {
+        const response = await Publisher.listSelect();
+        this.publishers = response.data.data;
+      } catch (error) {
+        console.error("Erro ao buscar editoras:", error);
       }
     },
     handleOptionsUpdate(options) {

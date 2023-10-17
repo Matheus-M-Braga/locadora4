@@ -57,36 +57,38 @@ export default {
       { id: 4, title: "Usuários cadastrados", icon: "mdi-account", value: "" },
       { id: 5, title: "Editoras cadastradas", icon: "mdi-pencil", value: "" },
     ],
-    loadingCard: false,
+    loadingCard: true,
     books: [],
     availableBooks: 0,
     rented: 0,
     users: 0,
-    publis: 0,
+    publishers: 0,
     totalUsers: 0,
     totalBooks: 0,
     totalPublishers: 0,
     totalRentals: 0,
     Listusers: [],
-    Listpublis: [],
+    Listpublishers: [],
     total: 0,
     rentals: [],
     lastRented: "",
   }),
   async mounted() {
-    await Promise.all([
-      this.getBooks(),
-      this.getRentals(),
-      this.getUsersAndPublishers(),
-    ]);
+    try {
+      await this.getBooks();
+      await this.getRentals();
+      await this.getUsers();
+      await this.getPublishers();
+      await this.getAvailableBooks();
+      await this.getPendingRentals();
+      await this.lastRent();
 
-    await Promise.all([
-      this.getAvailableBooks(),
-      this.getPendingRentals(),
-      this.lastRent(),
-    ]);
-
-    this.updateCardValues();
+      this.updateCardValues();
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error);
+    } finally {
+      this.loadingCard = false;
+    }
   },
   components: {
     LineChart,
@@ -98,43 +100,42 @@ export default {
       this.cards[1].value = this.rented;
       this.cards[2].value = this.totalRentals;
       this.cards[3].value = this.availableBooks;
-      this.cards[4].value = this.Listusers.length;
-      this.cards[5].value = this.publis;
+      this.cards[4].value = this.users;
+      this.cards[5].value = this.publishers;
     },
     async getBooks() {
-      await Book.listDash()
-        .then((response) => {
-          this.books = response.data.data;
-        })
-        .catch((error) => {
-          console.error("Erro na busca de livros", error);
-        });
+      try {
+        const response = await Book.listDash();
+        this.books = response.data.data;
+      } catch (error) {
+        console.error("Erro ao buscar livros: ", error);
+      }
     },
     async getRentals() {
-      this.loadingCard = true;
-      await Rental.listDash()
-        .then((response) => {
-          this.rentals = response.data.data;
-          this.totalRentals = this.rentals.length;
-        })
-        .catch((error) => {
-          console.error("Erro na busca de aluguéis", error);
-        })
-        .finally(() => {
-          this.loadingCard = false;
-        });
-    },
-    async getUsersAndPublishers() {
       try {
-        const usersResponse = await User.listSelect();
-        this.Listusers = usersResponse.data.data;
-        this.users = this.Listusers.length;
-
-        const publisResponse = await Publisher.listSelect();
-        this.Listpublis = publisResponse.data.data;
-        this.publis = this.Listpublis.length;
+        const response = await Rental.listDash();
+        this.rentals = response.data.data;
+        this.totalRentals = this.rentals.length;
       } catch (error) {
-        console.error("Erro ao buscar usuários e editoras", error);
+        console.error("Erro ao buscar aluguéis: ", error);
+      }
+    },
+    async getUsers() {
+      try {
+        const response = await User.listSelect();
+        this.Listusers = response.data.data;
+        this.users = this.Listusers.length;
+      } catch (error) {
+        console.error("Erro ao buscar usuários:", error);
+      }
+    },
+    async getPublishers() {
+      try {
+        const response = await Publisher.listSelect();
+        this.Listpublishers = response.data.data;
+        this.publishers = this.Listpublishers.length;
+      } catch (error) {
+        console.error("Erro ao buscar editora: ", error);
       }
     },
     async getAvailableBooks() {

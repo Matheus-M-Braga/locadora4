@@ -18,7 +18,6 @@
           :items-per-page="pageSize"
           :page="page"
           :search="search"
-          :custom-filter="filter"
           :no-results-text="noDataText"
           :no-data-text="noDataText"
           :footer-props="{
@@ -229,14 +228,6 @@ export default {
       this.search = newSearchValue;
       this.getUsers();
     },
-    filter(value, search) {
-      return (
-        value != null &&
-        search != null &&
-        (typeof value === "string" || typeof value === "number") &&
-        value.toString().toLowerCase().indexOf(search.toLowerCase()) !== -1
-      );
-    },
     CheckEmails() {
       return this.users.some((user) => user.email == this.email);
     },
@@ -269,7 +260,7 @@ export default {
         this.totalItems = data.totalRegisters;
       } catch (error) {
         console.error("Erro ao buscar informações:", error);
-        if (error.response.data.message === "Nenhum registro encontrado.") {
+        if (error.response.data.message.includes("Nenhum registro encontrado.")) {
           this.users = [];
         }
       } finally {

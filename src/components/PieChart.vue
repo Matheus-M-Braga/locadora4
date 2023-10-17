@@ -12,19 +12,11 @@ export default {
   data() {
     return {
       rentals: [],
-      loadingChart: false,
+      loadingChart: true,
     };
   },
   mounted() {
     this.listStatus();
-  },
-  watch: {
-    rentals: {
-      handler() {
-        this.updatePieChart();
-      },
-      deep: true,
-    },
   },
   methods: {
     parseDate(date) {
@@ -33,11 +25,8 @@ export default {
       return `${yyyy}-${mm}-${dd}`;
     },
     async listStatus() {
-      this.loadingChart = true;
       try {
-        const rentals = await Rental.listDash().finally(() => {
-          this.loadingChart = false
-        });
+        const rentals = await Rental.listDash();
         const status = {
           "No prazo": 0,
           Atrasado: 0,
@@ -45,7 +34,7 @@ export default {
         };
         const result = rentals.data;
         result.data.forEach((rental) => {
-          const rentalStatus = rental.status; 
+          const rentalStatus = rental.status;
           if (rentalStatus === "Atrasado") {
             status["Atrasado"]++;
           } else if (rentalStatus === "No prazo") {
@@ -56,14 +45,14 @@ export default {
         });
         const statusCountArray = Object.entries(status);
         this.rentals = statusCountArray;
-        this.updatePieChart();
-        this.loadingChart = false;
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
+      } finally {
+        this.loadingChart = false;
+        this.updatePieChart();
       }
     },
     updatePieChart() {
-      if (!this.rentals) return;
       const labels = this.rentals.map((item) => item[0]);
       const data = this.rentals.map((item) => item[1]);
       const ctx = this.$refs.myPieChart.getContext("2d");

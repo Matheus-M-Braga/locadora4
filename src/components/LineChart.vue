@@ -13,32 +13,20 @@ export default {
     return {
       rentals: [],
       mostrented: [],
-      loadingChart: false,
+      loadingChart: true,
     };
   },
   mounted() {
     this.listRentals();
   },
-  watch: {
-    rentals: {
-      handler() {
-        this.updateBarChart();
-      },
-      deep: true,
-    },
-  },
   methods: {
     async listRentals(){
-      this.loadingChart = true
       try {
-        this.rentals = await Rental.listDash().finally(() => {
-          this.loadingChart = false
-        })
+        const result = await Rental.listDash();
+        this.rentals = result.data;
 
-        const result = this.rentals.data;
-        // Mais alugados
         const RentalCount = {}
-        result.data.forEach((rental) => {
+        this.rentals.data.forEach((rental) => {
           const bookname = rental.book.name;
           if(RentalCount[bookname]){
             RentalCount[bookname]++;
@@ -52,9 +40,11 @@ export default {
           .map((bookname) => ({ bookname, quantity: RentalCount[bookname] }));
       } catch (error) {
         console.error("Erro ao buscar informações:", error);
-      } 
+      } finally {
+        this.loadingChart = false
+        this.updateBarChart();
+      }
     },
-    // Função pra reduzir as labels do gráfico de barra
     truncateLabel(label) {
       const maxLength = 13;
       if (label.length > maxLength) {
@@ -66,7 +56,7 @@ export default {
       const ctx = this.$refs.myChart.getContext("2d");
       const topFour = this.mostrented.slice(0, 4);
       
-      const labels = topFour.map((item) => this.truncateLabel(item.bookname));
+      const labels = topFour.map((item) => item.bookname);
       const data = topFour.map((item) => item.quantity);
       new Chart(ctx, {
         type: "bar",
