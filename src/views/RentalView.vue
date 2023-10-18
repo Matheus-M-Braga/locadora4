@@ -26,6 +26,12 @@
           mobile-breakpoint="890"
           class="elevation-1"
         >
+          <template v-slot:[`item.returnDate`]="{ item }">
+            <td v-if="item.returnDate != null">
+              {{ item.returnDate }}
+            </td>
+            <td v-if="item.returnDate == null">...</td>
+          </template>
           <template v-slot:[`item.status`]="{ item }">
             <td>
               <v-chip :class="statusClass(item)" class="black--text">
@@ -198,8 +204,8 @@ export default {
       PageTitle: "Aluguéis",
       headers: [
         { text: "ID", value: "id" },
-        { text: "Livro", align: "start", value: "book" },
-        { text: "Usuário", value: "user" },
+        { text: "Livro", align: "start", value: "book.name" },
+        { text: "Usuário", value: "user.name" },
         { text: "Data do Aluguel", value: "rentalDate" },
         { text: "Previsão de Devolução", value: "forecastDate" },
         { text: "Data de Devolução", value: "returnDate" },
@@ -228,7 +234,7 @@ export default {
       dialogDelete: false,
       dialogDevol: false,
       rentalId: null,
-      loadingTable: false,
+      loadingTable: true,
     };
   },
   computed: {
@@ -311,33 +317,25 @@ export default {
       return brazilCurrentDate.toISOString().substr(0, 10);
     },
     async getRentals() {
-      this.loadingTable = true;
       try {
-        const [rentalsResponse] = await Promise.all([
-          Rental.list({
-            Page: this.page,
-            PageSize: this.pageSize,
-            OrderBy: this.OrderBy,
-            OrderByDesc: this.OrderByDesc,
-            FilterValue: this.search,
-          }),
-        ]);
-        const data = rentalsResponse.data;
-
-        this.rentals = data.data.map((rental) => {
-          return {
-            id: rental.id,
-            book: rental.book.name,
-            user: rental.user.name,
-            rentalDate: this.formatDate(rental.rentalDate),
-            forecastDate: this.formatDate(rental.forecastDate),
-            returnDate: rental.returnDate
-              ? this.formatDate(rental.returnDate)
-              : "...",
-            status: rental.status,
-          };
+        const response = await Rental.list({
+          Page: this.page,
+          PageSize: this.pageSize,
+          OrderBy: this.OrderBy,
+          OrderByDesc: this.OrderByDesc,
+          FilterValue: this.search,
         });
-        this.totalItems = data.TotalRegisters;
+        this.rentals = response.data.data;
+        this.totalItems = response.data.totalRegisters;
+
+        this.rentals.forEach((rental) => {
+          rental.forecastDate = this.formatDate(rental.forecastDate);
+          rental.rentalDate = this.formatDate(rental.rentalDate);
+          rental.returnDate = rental.returnDate = rental.returnDate
+            ? this.formatDate(rental.returnDate)
+            : null;
+        });
+
         // Pendentes primeiro
         this.rentals.sort((a, b) => {
           if (a.status === "Pendente" && b.status !== "Pendente") {
@@ -361,26 +359,16 @@ export default {
     },
     async getBooks() {
       try {
-        const [booksResponse] = await Promise.all([Book.listSelect()]);
-        const data = booksResponse.data;
-
-        this.books = data.data.map((book) => ({
-          id: book.id,
-          name: book.name,
-        }));
+        const response = await Book.listSelect();
+        this.books = response.data.data;
       } catch (error) {
         console.error("Erro ao buscar informações:", error);
       }
     },
     async getUsers() {
       try {
-        const [usersResponse] = await Promise.all([User.listSelect()]);
-        const data = usersResponse.data;
-
-        this.users = data.data.map((book) => ({
-          id: book.id,
-          name: book.name,
-        }));
+        const response = await User.listSelect();
+        this.users = response.data.data;
       } catch (error) {
         console.error("Erro ao buscar informações:", error);
       }
@@ -423,7 +411,6 @@ export default {
     confirm() {
       this.$v.$touch();
       if (!this.$v.$error) {
-        // Identifica qual modal foi ativado (Add)
         if (this.ModalTitle === "Adicionar Aluguel") {
           const selectedBook = this.books.find(
             (livro) => livro.name === this.book
@@ -455,7 +442,7 @@ export default {
               Swal.fire({
                 icon: "error",
                 title: "Erro ao adicionar o aluguel: ",
-                text: error.response.data.error,
+                text: error.response.data.message,
                 showConfirmButton: false,
                 timer: 3500,
               });
@@ -502,12 +489,12 @@ export default {
             });
           }
         })
-        .catch((e) => {
-          console.error("Erro ao deletar aluguel:", e);
+        .catch((error) => {
+          console.error("Erro ao deletar aluguel:", error);
           Swal.fire({
             icon: "error",
             title: "Erro ao deletar aluguel!",
-            text: e.response.data.error,
+            text: error.response.data.message,
             showConfirmButton: false,
             timer: 3500,
           });
@@ -552,7 +539,7 @@ export default {
           Swal.fire({
             icon: "error",
             title: "Erro ao realizar devolução!",
-            text: error.response.data.error,
+            text: error.response.data.message,
             showConfirmButton: false,
             timer: 3500,
           });

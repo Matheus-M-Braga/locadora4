@@ -185,7 +185,7 @@ export default {
       dialogDelete: false,
       userId: null,
       emailExists: false,
-      loadingTable: false,
+      loadingTable: true,
     };
   },
   computed: {
@@ -238,29 +238,21 @@ export default {
       }
     },
     async getUsers() {
-      this.loadingTable = true;
       try {
-        const [usersResponse] = await Promise.all([
-          User.list({
-            Page: this.page,
-            PageSize: this.pageSize,
-            OrderBy: this.OrderBy,
-            OrderByDesc: this.OrderByDesc,
-            FilterValue: this.search,
-          }),
-        ]);
-        const data = usersResponse.data;
-        this.users = data.data.map((user) => ({
-          id: user.id,
-          name: user.name,
-          city: user.city,
-          address: user.address,
-          email: user.email,
-        }));
-        this.totalItems = data.totalRegisters;
+        const response = await User.list({
+          Page: this.page,
+          PageSize: this.pageSize,
+          OrderBy: this.OrderBy,
+          OrderByDesc: this.OrderByDesc,
+          FilterValue: this.search,
+        });
+        this.users = response.data.data;
+        this.totalItems = response.data.totalRegisters;
       } catch (error) {
         console.error("Erro ao buscar informações:", error);
-        if (error.response.data.message.includes("Nenhum registro encontrado.")) {
+        if (
+          error.response.data.message.includes("Nenhum registro encontrado.")
+        ) {
           this.users = [];
         }
       } finally {

@@ -263,8 +263,7 @@ export default {
               city: this.city,
             };
             Publisher.create(newpublisher)
-              .then((response) => {
-                this.publishers.push({ id: response.data.id, ...newpublisher });
+              .then(() => {
                 Swal.fire({
                   icon: "success",
                   title: "Editora adicionada com êxito!",
@@ -279,27 +278,20 @@ export default {
                 Swal.fire({
                   icon: "error",
                   title: "Erro ao adicionar editora.",
-                  text: error.response.data.error,
+                  text: error.response.data.message,
                   showConfirmButton: false,
                   timer: 3500,
                 });
               });
           }
           else {
-            const editedpublisher = {
+            const updatedpublisher = {
               id: this.publisherId,
               name: this.name,
               city: this.city,
             };
-            Publisher.update(editedpublisher)
+            Publisher.update(updatedpublisher)
               .then(() => {
-                this.publishers = this.publishers.map((publisher) => {
-                  if (publisher.id === editedpublisher.id) {
-                    return editedpublisher;
-                  } else {
-                    return publisher;
-                  }
-                });
                 Swal.fire({
                   icon: "success",
                   title: "Editora atualizada com êxito!",
@@ -323,7 +315,6 @@ export default {
         }
       }
     },
-    // Excluir
     openModalDelete(publisher) {
       this.publisherId = publisher.id;
       this.name = publisher.name;
