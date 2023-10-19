@@ -19,11 +19,6 @@ export default {
     this.listStatus();
   },
   methods: {
-    parseDate(date) {
-      const [dd, mm, yyyy] = date.split("/");
-
-      return `${yyyy}-${mm}-${dd}`;
-    },
     async listStatus() {
       try {
         const rentals = await Rental.listDash();

@@ -270,7 +270,9 @@ export default {
         this.totalItems = response.data.totalRegisters;
       } catch (error) {
         console.error("Erro ao buscar informações:", error);
-        if (error.response.data.message.includes("Nenhum registro encontrado.")) {
+        if (
+          error.response.data.message.includes("Nenhum registro encontrado.")
+        ) {
           this.books = [];
         }
       } finally {
@@ -322,13 +324,13 @@ export default {
       this.dialog = true;
       this.$v.$reset();
 
-      const selectedPubli = this.publishers.find(
+      const selectedPublisher = this.publishers.find(
         (publisher) => publisher.id === book.publisher.id
       );
       this.bookId = book.id;
       this.name = book.name;
       this.author = book.author;
-      this.publisher = selectedPubli;
+      this.publisher = selectedPublisher;
       this.release = book.release;
       this.quantity = book.quantity;
       this.rented = book.rented;
@@ -341,21 +343,19 @@ export default {
         this.$v.$touch();
         if (!this.$v.$error) {
           if (this.ModalTitle === "Adicionar Livro") {
-            const selectedPubli = this.publishers.find(
+            const selectedPublisher = this.publishers.find(
               (publisher) => publisher.name === this.publisher
             );
-            console.log(selectedPubli);
-            const newbook = {
+            const createdBook = {
               name: this.name,
               author: this.author,
-              publisherId: selectedPubli.id,
+              publisherId: selectedPublisher.id,
               release: this.release,
               quantity: this.quantity,
               rented: "0",
             };
-            Book.create(newbook)
-              .then((response) => {
-                this.books.push({ id: response.data.id, ...newbook });
+            Book.create(createdBook)
+              .then(() => {
                 Swal.fire({
                   icon: "success",
                   title: "Livro adicionado com êxito!",
@@ -376,27 +376,20 @@ export default {
                 });
               });
           } else {
-            const selectedPubli = this.publishers.find(
+            const selectedPublisher = this.publishers.find(
               (publisher) => publisher.name === this.publisher
             );
-            const editedbook = {
+            const updatedBook = {
               id: this.bookId,
               name: this.name,
               author: this.author,
-              publisherId: selectedPubli.id,
+              publisherId: selectedPublisher.id,
               release: this.release,
               quantity: this.quantity,
               rented: this.rented,
             };
-            Book.update(editedbook)
+            Book.update(updatedBook)
               .then(() => {
-                this.books = this.books.map((book) => {
-                  if (this.bookId === editedbook.id) {
-                    return editedbook;
-                  } else {
-                    return book;
-                  }
-                });
                 Swal.fire({
                   icon: "success",
                   title: "Livro atualizado com êxito!",
@@ -433,14 +426,14 @@ export default {
       this.dialogDelete = false;
     },
     confirmDelete() {
-      const deletedbook = {
+      const deletedBook = {
         id: this.bookId,
         name: this.name,
         author: this.author,
         publisher: this.publisher,
         release: this.release,
       };
-      Book.delete(deletedbook)
+      Book.delete(deletedBook)
         .then((response) => {
           if (response.status === 200) {
             Swal.fire({
@@ -449,16 +442,16 @@ export default {
               showConfirmButton: false,
               timer: 3500,
             });
-            this.getBooks();
             this.closeModalDelete();
+            this.getBooks();
           }
         })
-        .catch((e) => {
-          console.error("Erro ao deletar o livro:", e);
+        .catch((error) => {
+          console.error("Erro ao deletar o livro:", error);
           Swal.fire({
             icon: "error",
             title: "Erro ao deletar o livro.",
-            text: e.response.data.error,
+            text: error.response.data.error,
             showConfirmButton: false,
             timer: 3500,
           });

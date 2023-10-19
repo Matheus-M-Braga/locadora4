@@ -258,11 +258,11 @@ export default {
         this.$v.$touch();
         if (!this.$v.$error) {
           if (this.ModalTitle === "Adicionar Editora") {
-            const newpublisher = {
+            const createdPublisher = {
               name: this.name,
               city: this.city,
             };
-            Publisher.create(newpublisher)
+            Publisher.create(createdPublisher)
               .then(() => {
                 Swal.fire({
                   icon: "success",
@@ -284,12 +284,12 @@ export default {
                 });
               });
           } else {
-            const updatedpublisher = {
+            const updatedPublisher = {
               id: this.publisherId,
               name: this.name,
               city: this.city,
             };
-            Publisher.update(updatedpublisher)
+            Publisher.update(updatedPublisher)
               .then(() => {
                 Swal.fire({
                   icon: "success",
@@ -324,12 +324,12 @@ export default {
       this.dialogDelete = false;
     },
     confirmDelete() {
-      const deletedpublisher = {
+      const deletedPublisher = {
         id: this.publisherId,
         name: this.name,
         city: this.city,
       };
-      Publisher.delete(deletedpublisher)
+      Publisher.delete(deletedPublisher)
         .then(() => {
           Swal.fire({
             icon: "success",

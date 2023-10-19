@@ -189,7 +189,6 @@ export default {
     };
   },
   computed: {
-    // validacao
     NameError() {
       const errors = [];
       if (!this.$v.name.$dirty) return errors;
@@ -307,21 +306,21 @@ export default {
         this.$v.$touch();
         if (!this.$v.$error) {
           if (this.ModalTitle === "Adicionar Usuário") {
-            const newuser = {
+            const createdUser = {
               name: this.name,
               address: this.address,
               city: this.city,
               email: this.email,
             };
-            User.create(newuser)
-              .then((response) => {
-                this.users.push({ id: response.data.id, ...newuser });
+            User.create(createdUser)
+              .then(() => {
                 Swal.fire({
                   icon: "success",
                   title: "Usuário adicionado com êxito!",
                   showConfirmButton: false,
                   timer: 3500,
                 });
+                this.getUsers();
                 this.closeModal();
               })
               .catch((error) => {
@@ -335,29 +334,22 @@ export default {
                 });
               });
           } else {
-            const editeduser = {
+            const updatedUser = {
               id: this.userId,
               name: this.name,
               address: this.address,
               city: this.city,
               email: this.email,
             };
-            User.update(editeduser)
+            User.update(updatedUser)
               .then(() => {
-                this.users = this.users.map((user) => {
-                  if (user.id === editeduser.id) {
-                    return editeduser;
-                  } else {
-                    return user;
-                  }
-                });
-                this.dialogEdit = false;
                 Swal.fire({
                   icon: "success",
                   title: "Usuário atualizado com êxito!",
                   showConfirmButton: false,
                   timer: 3500,
                 });
+                this.getUsers();
                 this.closeModal();
               })
               .catch((error) => {
@@ -387,16 +379,15 @@ export default {
       this.dialogDelete = false;
     },
     confirmDelete() {
-      const deleteduser = {
+      const deletedUser = {
         id: this.userId,
         name: this.name,
         address: this.address,
         city: this.city,
         email: this.email,
       };
-      User.delete(deleteduser)
-        .then((response) => {
-          if (response.status === 200) {
+      User.delete(deletedUser)
+        .then(() => {
             Swal.fire({
               icon: "success",
               title: "Usuário deletado com êxito!",
@@ -405,14 +396,6 @@ export default {
             });
             this.getUsers();
             this.closeModalDelete();
-          } else {
-            Swal.fire({
-              icon: "error",
-              title: "Erro ao deletar usuário.",
-              showConfirmButton: false,
-              timer: 3500,
-            });
-          }
         })
         .catch((error) => {
           console.error("Erro ao deletar a usuário:", error);

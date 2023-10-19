@@ -56,8 +56,8 @@ export default {
       const ctx = this.$refs.myChart.getContext("2d");
       const topFour = this.mostrented.slice(0, 4);
       
-      const labels = topFour.map((item) => item.bookname);
-      const data = topFour.map((item) => item.quantity);
+      const labels = topFour.map((item) => this.truncateLabel(item.bookname));
+      const data = topFour.map((item) => this.truncateLabel(item.quantity));
       new Chart(ctx, {
         type: "bar",
         data: {

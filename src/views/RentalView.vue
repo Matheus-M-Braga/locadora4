@@ -271,8 +271,15 @@ export default {
   },
   methods: {
     updateSearch(newSearchValue) {
-      this.search = newSearchValue;
-      this.getRentals();
+      const dateRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+      if (newSearchValue.match(dateRegex)) {
+        // Se for uma data válida, atualize o estado de pesquisa e obtenha os aluguéis
+        this.search = this.parseDate(newSearchValue);
+        this.getRentals();
+      } else {
+        this.search = newSearchValue;
+        this.getRentals();
+      }
     },
     MaxDate() {
       const today = new Date();
@@ -308,7 +315,7 @@ export default {
       const [day, month, year] = date.split("/");
       return `${year}-${month}-${day}`;
     },
-    getDate() {
+    getCurrentDate() {
       const brazilTimeZoneOffset = -3 * 60;
       const currentUTCDate = new Date();
       const brazilCurrentDate = new Date(
@@ -325,7 +332,6 @@ export default {
           OrderByDesc: this.OrderByDesc,
           FilterValue: this.search,
         });
-        // console.log(response)
         this.rentals = response.data.data;
         this.totalItems = response.data.totalRegisters;
 
@@ -335,17 +341,6 @@ export default {
           rental.returnDate = rental.returnDate = rental.returnDate
             ? this.formatDate(rental.returnDate)
             : null;
-        });
-
-        // Pendentes primeiro
-        this.rentals.sort((a, b) => {
-          if (a.status === "Pendente" && b.status !== "Pendente") {
-            return -1;
-          } else if (a.status !== "Pendente" && b.status === "Pendente") {
-            return 1;
-          } else {
-            return 0;
-          }
         });
       } catch (error) {
         console.error("Erro ao buscar informações:", error);
@@ -384,13 +379,22 @@ export default {
         returnDate: "ReturnDate",
         status: "Status",
       };
-      console.log(options)
+      console.log(options);
       if (options.sortBy[0] || options.sortDesc[0]) {
         this.OrderByProperty = sortByMapping[options.sortBy[0]];
         this.OrderByDesc = options.sortDesc[0];
       } else {
-        this.OrderByProperty = "Id";
-        this.OrderByDesc = false;
+        this.OrderByProperty = "Status";
+        this.OrderByDesc = true;
+        this.rentals.sort((a, b) => {
+          if (a.status === "Pendente" && b.status !== "Pendente") {
+            return -1;
+          } else if (a.status !== "Pendente" && b.status === "Pendente") {
+            return 1;
+          } else {
+            return 0;
+          }
+        });
       }
       this.pageSize = options.itemsPerPage;
       this.page = options.page;
@@ -403,7 +407,7 @@ export default {
 
       this.book = "";
       this.user = "";
-      this.rentalDate = this.getDate();
+      this.rentalDate = this.getCurrentDate();
       this.forecastDate = "";
       this.returnDate = "";
     },
@@ -421,14 +425,13 @@ export default {
             (usuario) => usuario.name === this.user
           );
 
-          const novoAlug = {
+          const createdRental = {
             bookId: selectedBook.id,
             userId: selectedUser.id,
             rentalDate: this.rentalDate,
             forecastDate: this.forecastDate,
           };
-          console.log(novoAlug)
-          Rental.create(novoAlug)
+          Rental.create(createdRental)
             .then(() => {
               Swal.fire({
                 icon: "success",
@@ -462,7 +465,7 @@ export default {
     confirmDelete(rental) {
       const selectedBook = this.books.find((book) => book.name === rental.book);
       const selectedUser = this.users.find((user) => user.name === rental.user);
-      const deleteAlug = {
+      const deletedRental = {
         id: rental.id,
         book: selectedBook,
         user: selectedUser,
@@ -470,26 +473,16 @@ export default {
         forecastDate: this.parseDate(rental.forecastDate),
         returnDate: rental.returnDate !== "..." ? rental.returnDate : null,
       };
-      console.log(deleteAlug);
-      Rental.delete(deleteAlug)
-        .then((response) => {
-          if (response.status === 200) {
-            Swal.fire({
-              icon: "success",
-              title: "Aluguel deletado com êxito!",
-              showConfirmButton: false,
-              timer: 3500,
-            });
-            this.getRentals();
-            this.closeModalDelete();
-          } else {
-            Swal.fire({
-              icon: "error",
-              title: "Erro ao deletar aluguel!",
-              showConfirmButton: false,
-              timer: 3500,
-            });
-          }
+      Rental.delete(deletedRental)
+        .then(() => {
+          Swal.fire({
+            icon: "success",
+            title: "Aluguel deletado com êxito!",
+            showConfirmButton: false,
+            timer: 3500,
+          });
+          this.getRentals();
+          this.closeModalDelete();
         })
         .catch((error) => {
           console.error("Erro ao deletar aluguel:", error);
@@ -520,13 +513,6 @@ export default {
       };
       Rental.update(returnedRental)
         .then(() => {
-          this.rentals = this.rentals.map((rental) => {
-            if (this.selectedALugId === returnedRental.id) {
-              return returnedRental;
-            } else {
-              return rental;
-            }
-          });
           Swal.fire({
             icon: "success",
             title: "Devolução realizada com êxito!",
