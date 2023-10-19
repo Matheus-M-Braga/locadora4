@@ -178,7 +178,7 @@ export default {
       email: "",
       totalItems: 0,
       pageSize: 0,
-      OrderBy: "Id",
+      OrderByProperty: "Id",
       OrderByDesc: false,
       page: 1,
       dialog: false,
@@ -242,7 +242,7 @@ export default {
         const response = await User.list({
           Page: this.page,
           PageSize: this.pageSize,
-          OrderBy: this.OrderBy,
+          OrderByProperty: this.OrderByProperty,
           OrderByDesc: this.OrderByDesc,
           FilterValue: this.search,
         });
@@ -268,10 +268,10 @@ export default {
         email: "Email",
       };
       if (options.sortBy[0] || options.sortDesc[0]) {
-        this.OrderBy = sortByMapping[options.sortBy[0].toLowerCase()];
+        this.OrderByProperty = sortByMapping[options.sortBy[0]];
         this.OrderByDesc = options.sortDesc[0];
       } else {
-        this.OrderBy = "Id";
+        this.OrderByProperty = "Id";
         this.OrderByDesc = false;
       }
       this.pageSize = options.itemsPerPage;

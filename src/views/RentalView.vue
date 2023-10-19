@@ -30,7 +30,7 @@
             <td v-if="item.returnDate != null">
               {{ item.returnDate }}
             </td>
-            <td v-if="item.returnDate == null">...</td>
+            <td v-if="item.returnDate == null" class="text-center">...</td>
           </template>
           <template v-slot:[`item.status`]="{ item }">
             <td>
@@ -227,7 +227,7 @@ export default {
       status: "",
       totalItems: 0,
       pageSize: 0,
-      OrderBy: "Id",
+      OrderByProperty: "Id",
       OrderByDesc: false,
       page: 1,
       dialog: false,
@@ -321,10 +321,11 @@ export default {
         const response = await Rental.list({
           Page: this.page,
           PageSize: this.pageSize,
-          OrderBy: this.OrderBy,
+          OrderByProperty: this.OrderByProperty,
           OrderByDesc: this.OrderByDesc,
           FilterValue: this.search,
         });
+        // console.log(response)
         this.rentals = response.data.data;
         this.totalItems = response.data.totalRegisters;
 
@@ -376,18 +377,19 @@ export default {
     handleOptionsUpdate(options) {
       const sortByMapping = {
         id: "Id",
-        book: "Book",
-        user: "User",
+        "book.name": "Book.Name",
+        "user.name": "User.Name",
         rentalDate: "RentalDate",
         forecastDate: "ForecastDate",
         returnDate: "ReturnDate",
         status: "Status",
       };
+      console.log(options)
       if (options.sortBy[0] || options.sortDesc[0]) {
-        this.OrderBy = sortByMapping[options.sortBy[0].toLowerCase()];
+        this.OrderByProperty = sortByMapping[options.sortBy[0]];
         this.OrderByDesc = options.sortDesc[0];
       } else {
-        this.OrderBy = "Id";
+        this.OrderByProperty = "Id";
         this.OrderByDesc = false;
       }
       this.pageSize = options.itemsPerPage;
@@ -425,9 +427,9 @@ export default {
             rentalDate: this.rentalDate,
             forecastDate: this.forecastDate,
           };
+          console.log(novoAlug)
           Rental.create(novoAlug)
-            .then((response) => {
-              this.rentals.push({ id: response.data.id, ...novoAlug });
+            .then(() => {
               Swal.fire({
                 icon: "success",
                 title: "Aluguel adicionado com êxito!",

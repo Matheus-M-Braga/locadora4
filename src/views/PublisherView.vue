@@ -149,7 +149,7 @@ export default {
       city: "",
       totalItems: 0,
       pageSize: 0,
-      OrderBy: "Id",
+      OrderByProperty: "Id",
       OrderByDesc: false,
       page: 1,
       dialog: false,
@@ -199,11 +199,11 @@ export default {
         const response = await Publisher.list({
           Page: this.page,
           PageSize: this.pageSize,
-          OrderBy: this.OrderBy,
+          OrderByProperty: this.OrderByProperty,
           OrderByDesc: this.OrderByDesc,
           FilterValue: this.search,
         });
-        this.publishers = response.data.data
+        this.publishers = response.data.data;
         this.totalItems = response.data.totalRegisters;
       } catch (error) {
         console.error("Erro ao buscar informações:", error);
@@ -223,10 +223,10 @@ export default {
         city: "City",
       };
       if (options.sortBy[0] || options.sortDesc[0]) {
-        this.OrderBy = sortByMapping[options.sortBy[0].toLowerCase()];
+        this.OrderByProperty = sortByMapping[options.sortBy[0]];
         this.OrderByDesc = options.sortDesc[0];
       } else {
-        this.OrderBy = "Id";
+        this.OrderByProperty = "Id";
         this.OrderByDesc = false;
       }
       this.pageSize = options.itemsPerPage;
@@ -283,8 +283,7 @@ export default {
                   timer: 3500,
                 });
               });
-          }
-          else {
+          } else {
             const updatedpublisher = {
               id: this.publisherId,
               name: this.name,
@@ -331,31 +330,21 @@ export default {
         city: this.city,
       };
       Publisher.delete(deletedpublisher)
-        .then((response) => {
-          if (response.status === 200) {
-            Swal.fire({
-              icon: "success",
-              title: "Editora deletada com êxito!",
-              showConfirmButton: false,
-              timer: 3500,
-            });
-            this.getPublishers();
-          } else {
-            Swal.fire({
-              icon: "error",
-              title: "Erro ao deletar editora.",
-              showConfirmButton: false,
-              timer: 3500,
-            });
-          }
+        .then(() => {
+          Swal.fire({
+            icon: "success",
+            title: "Editora deletada com êxito!",
+            showConfirmButton: false,
+            timer: 3500,
+          });
+          this.getPublishers();
         })
-        .catch((e) => {
-          console.error("Erro ao deletar a editora:", e);
-          console.log(e.response);
+        .catch((error) => {
+          console.error("Erro ao deletar a editora:", error);
           Swal.fire({
             icon: "error",
             title: "Erro ao deletar editora.",
-            text: e.response.data.message,
+            text: error.response.data.message,
             showConfirmButton: false,
             timer: 3500,
           });

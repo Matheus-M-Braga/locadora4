@@ -6,7 +6,7 @@ export default {
       params: {
         Page: params.Page,
         PageSize: params.PageSize,
-        OrderBy: params.OrderBy,
+        OrderByProperty: params.OrderByProperty,
         OrderByDesc: params.OrderByDesc,
         FilterValue: params.FilterValue,
       },

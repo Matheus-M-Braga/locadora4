@@ -192,7 +192,7 @@ export default {
       rented: 0,
       totalItems: 0,
       pageSize: 0,
-      OrderBy: "Id",
+      OrderByProperty: "Id",
       OrderByDesc: false,
       page: 1,
       dialog: false,
@@ -262,7 +262,7 @@ export default {
         const response = await Book.list({
           Page: this.page,
           PageSize: this.pageSize,
-          OrderBy: this.OrderBy,
+          OrderByProperty: this.OrderByProperty,
           OrderByDesc: this.OrderByDesc,
           FilterValue: this.search,
         });
@@ -290,16 +290,16 @@ export default {
         id: "Id",
         name: "Name",
         author: "Author",
-        publisher: "Publisher",
+        "publisher.name": "Publisher.Name",
         release: "Release",
         quantity: "Quantity",
         rented: "Rented",
       };
       if (options.sortBy[0] || options.sortDesc[0]) {
-        this.OrderBy = sortByMapping[options.sortBy[0].toLowerCase()];
+        this.OrderByProperty = sortByMapping[options.sortBy[0]];
         this.OrderByDesc = options.sortDesc[0];
       } else {
-        this.OrderBy = "Id";
+        this.OrderByProperty = "Id";
         this.OrderByDesc = false;
       }
       this.pageSize = options.itemsPerPage;
