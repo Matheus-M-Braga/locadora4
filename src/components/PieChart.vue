@@ -21,7 +21,7 @@ export default {
   methods: {
     async listStatus() {
       try {
-        const rentals = await Rental.listDash();
+        const rentals = await Rental.listCount();
         const status = {
           "No prazo": 0,
           Atrasado: 0,

@@ -105,7 +105,7 @@ export default {
     },
     async getBooks() {
       try {
-        const response = await Book.listDash();
+        const response = await Book.listCount();
         this.books = response.data.data;
       } catch (error) {
         console.error("Erro ao buscar livros: ", error);
@@ -113,7 +113,7 @@ export default {
     },
     async getRentals() {
       try {
-        const response = await Rental.listDash();
+        const response = await Rental.listCount();
         this.rentals = response.data.data;
         this.totalRentals = this.rentals.length;
       } catch (error) {

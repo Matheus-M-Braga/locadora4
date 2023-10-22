@@ -271,9 +271,9 @@ export default {
   },
   methods: {
     updateSearch(newSearchValue) {
-      const dateRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
-      if (newSearchValue.match(dateRegex)) {
-        // Se for uma data válida, atualize o estado de pesquisa e obtenha os aluguéis
+      const dateRegex = /^(\d{1,2})\/(\d{1,2})(?:\/(\d{1,4}))?$/;
+
+      if (dateRegex.test(newSearchValue)) {
         this.search = this.parseDate(newSearchValue);
         this.getRentals();
       } else {
@@ -313,7 +313,13 @@ export default {
       if (!date) return null;
 
       const [day, month, year] = date.split("/");
-      return `${year}-${month}-${day}`;
+      let formattedDate = `${month}-${day}`;
+
+      if (year) {
+        formattedDate = `${year}-${month}-${day}`;
+      }
+
+      return formattedDate;
     },
     getCurrentDate() {
       const brazilTimeZoneOffset = -3 * 60;

@@ -17,12 +17,12 @@ export default {
     };
   },
   mounted() {
-    this.listRentals();
+    this.getRentals();
   },
   methods: {
-    async listRentals(){
+    async getRentals(){
       try {
-        const result = await Rental.listDash();
+        const result = await Rental.listCount();
         this.rentals = result.data;
 
         const RentalCount = {}

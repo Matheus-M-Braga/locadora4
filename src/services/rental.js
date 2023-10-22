@@ -12,8 +12,8 @@ export default {
       },
     });
   },
-  listDash: () => {
-    return axios.get("rentals/dash");
+  listCount: () => {
+    return axios.get("rentals/count");
   },
   create: (rental) => {
     return axios.post("rentals", rental);
