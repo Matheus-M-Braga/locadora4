@@ -38,20 +38,20 @@ export default {
       },
       {
         id: 1,
-        title: "Aluguéis Ativos",
-        icon: "mdi-book-open-variant",
-        value: "",
-      },
-      {
-        id: 2,
         title: "Total de Aluguéis",
         icon: "mdi-book-account",
         value: "",
       },
       {
-        id: 3,
+        id: 2,
         title: "Livros disponíveis",
         icon: "mdi-book-check",
+        value: "",
+      },
+      {
+        id: 3,
+        title: "Livros Cadastrados",
+        icon: "mdi-book-open-variant",
         value: "",
       },
       { id: 4, title: "Usuários cadastrados", icon: "mdi-account", value: "" },
@@ -86,6 +86,7 @@ export default {
       this.updateCardValues();
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
+      
     } finally {
       this.loadingCard = false;
     }
@@ -97,11 +98,11 @@ export default {
   methods: {
     updateCardValues() {
       this.cards[0].value = this.lastRented;
-      this.cards[1].value = this.rented;
-      this.cards[2].value = this.totalRentals;
-      this.cards[3].value = this.availableBooks;
-      this.cards[4].value = this.users;
-      this.cards[5].value = this.publishers;
+      this.cards[1].value = this.rentals.length;
+      this.cards[2].value = this.availableBooks;
+      this.cards[3].value = this.books.length;
+      this.cards[4].value = this.users.length;
+      this.cards[5].value = this.publishers.length;
     },
     async getBooks() {
       try {
@@ -115,7 +116,6 @@ export default {
       try {
         const response = await Rental.listCount();
         this.rentals = response.data.data;
-        this.totalRentals = this.rentals.length;
       } catch (error) {
         console.error("Erro ao buscar aluguéis: ", error);
       }
@@ -123,8 +123,7 @@ export default {
     async getUsers() {
       try {
         const response = await User.listSelect();
-        this.Listusers = response.data.data;
-        this.users = this.Listusers.length;
+        this.users = response.data.data;
       } catch (error) {
         console.error("Erro ao buscar usuários:", error);
       }
@@ -132,8 +131,7 @@ export default {
     async getPublishers() {
       try {
         const response = await Publisher.listSelect();
-        this.Listpublishers = response.data.data;
-        this.publishers = this.Listpublishers.length;
+        this.publishers = response.data.data;
       } catch (error) {
         console.error("Erro ao buscar editora: ", error);
       }

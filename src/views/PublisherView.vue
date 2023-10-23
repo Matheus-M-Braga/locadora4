@@ -207,9 +207,7 @@ export default {
         this.totalItems = response.data.totalRegisters;
       } catch (error) {
         console.error("Erro ao buscar informações:", error);
-        if (
-          error.response.data.message.includes("Nenhum registro encontrado.")
-        ) {
+        if (error.response.status == 404) {
           this.publishers = [];
         }
       } finally {

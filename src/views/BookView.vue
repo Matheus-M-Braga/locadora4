@@ -270,9 +270,7 @@ export default {
         this.totalItems = response.data.totalRegisters;
       } catch (error) {
         console.error("Erro ao buscar informações:", error);
-        if (
-          error.response.data.message.includes("Nenhum registro encontrado.")
-        ) {
+        if (error.response.status == 404) {
           this.books = [];
         }
       } finally {
@@ -370,7 +368,7 @@ export default {
                 Swal.fire({
                   icon: "error",
                   title: "Erro ao adicionar o livro.",
-                  text: error.response.data.error,
+                  text: error.response.data.message,
                   showConfirmButton: false,
                   timer: 3500,
                 });
@@ -404,7 +402,7 @@ export default {
                 Swal.fire({
                   icon: "error",
                   title: "Erro ao atualizar o livro.",
-                  text: error.response.data.error,
+                  text: error.response.data.message,
                   showConfirmButton: false,
                   timer: 3500,
                 });
@@ -451,7 +449,7 @@ export default {
           Swal.fire({
             icon: "error",
             title: "Erro ao deletar o livro.",
-            text: error.response.data.error,
+            text: error.response.data.message,
             showConfirmButton: false,
             timer: 3500,
           });

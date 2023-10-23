@@ -249,9 +249,7 @@ export default {
         this.totalItems = response.data.totalRegisters;
       } catch (error) {
         console.error("Erro ao buscar informações:", error);
-        if (
-          error.response.data.message.includes("Nenhum registro encontrado.")
-        ) {
+        if (error.response.status == 404) {
           this.users = [];
         }
       } finally {
@@ -388,14 +386,14 @@ export default {
       };
       User.delete(deletedUser)
         .then(() => {
-            Swal.fire({
-              icon: "success",
-              title: "Usuário deletado com êxito!",
-              showConfirmButton: false,
-              timer: 3500,
-            });
-            this.getUsers();
-            this.closeModalDelete();
+          Swal.fire({
+            icon: "success",
+            title: "Usuário deletado com êxito!",
+            showConfirmButton: false,
+            timer: 3500,
+          });
+          this.getUsers();
+          this.closeModalDelete();
         })
         .catch((error) => {
           console.error("Erro ao deletar a usuário:", error);

@@ -350,13 +350,12 @@ export default {
         });
       } catch (error) {
         console.error("Erro ao buscar informações:", error);
-        if (
-          error.response.data.message.includes("Nenhum registro encontrado.")
-        ) {
+        if (error.response.status == 404) {
           this.rentals = [];
         }
       } finally {
         this.loadingTable = false;
+        console.log(this.rentals)
       }
     },
     async getBooks() {
