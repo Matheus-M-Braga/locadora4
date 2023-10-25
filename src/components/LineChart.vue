@@ -39,7 +39,6 @@ export default {
           .map((bookname) => ({ bookname, quantity: RentalCount[bookname] }));
       } catch (error) {
         console.error(error);
-
       } finally {
         this.loadingChart = false;
         this.updateBarChart();
@@ -79,6 +78,25 @@ export default {
           ],
         },
         options: {
+          scales: {
+            yAxes: [
+              {
+                ticks: {
+                  display: false,
+                },
+                gridLines: {
+                  display: false,
+                },
+              },
+            ],
+            xAxes: [
+              {
+                gridLines: {
+                  display: false,
+                },
+              },
+            ],
+          },
           legend: {
             display: false,
           },

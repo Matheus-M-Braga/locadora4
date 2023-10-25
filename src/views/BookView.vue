@@ -22,7 +22,7 @@
           :no-data-text="noDataText"
           :footer-props="{
             'items-per-page-text': 'Registros por página',
-            'items-per-page-options': [7, 10, 15, this.totalItems],
+            'items-per-page-options': [7, 10, this.totalItems],
           }"
           @update:options="handleOptionsUpdate"
           mobile-breakpoint="890"
@@ -147,7 +147,7 @@ import Book from "@/services/book";
 import Publisher from "@/services/publisher";
 import Swal from "sweetalert2";
 import { validationMixin } from "vuelidate";
-import { required, maxLength } from "vuelidate/lib/validators";
+import { required, maxLength, minLength } from "vuelidate/lib/validators";
 import TableTop from "@/components/TableTop.vue";
 
 export default {
@@ -159,8 +159,14 @@ export default {
     name: { required },
     author: { required },
     publisher: { required },
-    release: { required, maxLength: maxLength(4) },
-    quantity: { required, maxLength: maxLength(4) },
+    release: { required, minLength: minLength(4), maxLength: maxLength(4) },
+    quantity: {
+      required,
+      maxLength: maxLength(4),
+      isPositive(value) {
+        return value > 0;
+      },
+    },
   },
   data() {
     return {
@@ -227,7 +233,10 @@ export default {
     DateError() {
       const errors = [];
       if (!this.$v.release.$dirty) return errors;
-      !this.$v.release.maxLength && errors.push("O limite é de 4 dígitos.");
+      !this.$v.release.maxLength &&
+        errors.push("Necessário 4 dígitos para o ano de lançamento.");
+      !this.$v.release.minLength &&
+        errors.push("Necessário 4 dígitos para o ano de lançamento.");
       !this.$v.release.required && errors.push("Informe o ano de Lançamento.");
       return errors;
     },
@@ -235,7 +244,9 @@ export default {
       const errors = [];
       if (!this.$v.quantity.$dirty) return errors;
       !this.$v.quantity.maxLength && errors.push("O limite é de 4 dígitos.");
-      !this.$v.quantity.required && errors.push("Informe a quantidade.");
+      !this.$v.quantity.required && errors.push("Informe o estoque.");
+      !this.$v.quantity.isPositive &&
+        errors.push("O estoque deve ser superio a 0.");
       return errors;
     },
   },
@@ -375,7 +386,7 @@ export default {
               });
           } else {
             const selectedPublisher = this.publishers.find(
-              (publisher) => publisher.name === this.publisher
+              (publisher) => publisher === this.publisher
             );
             const updatedBook = {
               id: this.bookId,

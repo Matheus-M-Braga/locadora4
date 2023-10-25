@@ -271,10 +271,11 @@ export default {
   },
   methods: {
     updateSearch(newSearchValue) {
-      const dateRegex = /^(\d{1,2})\/(\d{1,2})(?:\/(\d{1,4}))?$/;
+      const dateRegex = /^(\d{1,2})\/?(\d{1,2})?\/?(\d{0,4})?$/;
 
       if (dateRegex.test(newSearchValue)) {
         this.search = this.parseDate(newSearchValue);
+        console.log(this.search);
         this.getRentals();
       } else {
         this.search = newSearchValue;
@@ -310,12 +311,14 @@ export default {
       return localDate.toLocaleDateString("pt-BR", options);
     },
     parseDate(date) {
-      if (!date) return null;
-
       const [day, month, year] = date.split("/");
-      let formattedDate = `${month}-${day}`;
+      let formattedDate = `-${day}`;
 
-      if (year) {
+      if(month){
+        formattedDate = `-${month}-${day}`;
+      }
+
+      if (year && month) {
         formattedDate = `${year}-${month}-${day}`;
       }
 
@@ -355,7 +358,7 @@ export default {
         }
       } finally {
         this.loadingTable = false;
-        console.log(this.rentals)
+        console.log(this.rentals);
       }
     },
     async getBooks() {
