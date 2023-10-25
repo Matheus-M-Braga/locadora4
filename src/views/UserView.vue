@@ -90,7 +90,7 @@
                     type="email"
                     required
                     :error-messages="EmailError"
-                    @input="validateEmail()"
+                    @input="$v.email.$touch()"
                     @blur="$v.email.$touch()"
                   ></v-text-field>
                 </v-col>
@@ -226,15 +226,6 @@ export default {
     updateSearch(newSearchValue) {
       this.search = newSearchValue;
       this.getUsers();
-    },
-    CheckEmails() {
-      return this.users.some((user) => user.email == this.email);
-    },
-    validateEmail() {
-      this.emailExists = this.CheckEmails(this.email);
-      if (this.emailExists) {
-        this.$v.email.$touch();
-      }
     },
     async getUsers() {
       try {

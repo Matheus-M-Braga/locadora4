@@ -57,7 +57,7 @@
                   label="Nome"
                   required
                   :error-messages="NameError"
-                  @input="validateName()"
+                  @input="$v.name.$touch()"
                   @blur="$v.name.$touch()"
                 ></v-text-field>
               </v-col>
@@ -258,15 +258,6 @@ export default {
     updateSearch(newSearchValue) {
       this.search = newSearchValue;
       this.getBooks();
-    },
-    CheckNames() {
-      return this.books.some((book) => book.name == this.name);
-    },
-    validateName() {
-      this.nameExists = this.CheckNames(this.name);
-      if (this.nameExists) {
-        this.$v.name.$touch();
-      }
     },
     async getBooks() {
       try {
