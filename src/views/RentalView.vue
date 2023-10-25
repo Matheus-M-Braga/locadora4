@@ -491,6 +491,7 @@ export default {
           });
           this.getRentals();
           this.closeModalDelete();
+          this.page = 1;
         })
         .catch((error) => {
           console.error("Erro ao deletar aluguel:", error);

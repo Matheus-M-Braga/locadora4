@@ -385,6 +385,7 @@ export default {
           });
           this.getUsers();
           this.closeModalDelete();
+          this.page = 1;
         })
         .catch((error) => {
           console.error("Erro ao deletar a usuário:", error);

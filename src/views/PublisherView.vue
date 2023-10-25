@@ -327,6 +327,7 @@ export default {
             timer: 3500,
           });
           this.getPublishers();
+          this.page = 1;
         })
         .catch((error) => {
           console.error("Erro ao deletar a editora:", error);

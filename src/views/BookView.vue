@@ -444,6 +444,7 @@ export default {
             });
             this.closeModalDelete();
             this.getBooks();
+            this.page = 1;
           }
         })
         .catch((error) => {
