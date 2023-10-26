@@ -75,6 +75,7 @@
                 <v-select
                   v-model="publisher"
                   :items="publishers"
+                  item-value="id"
                   item-text="name"
                   label="Editora"
                   required
@@ -192,7 +193,7 @@ export default {
       id: 0,
       name: "",
       author: "",
-      publisher: {},
+      publisher: null,
       release: 0,
       quantity: 0,
       rented: 0,
@@ -315,7 +316,7 @@ export default {
 
       this.name = "";
       this.author = "";
-      this.publisher = "";
+      this.publisher = null;
       this.release = "";
       this.quantity = "";
     },
@@ -324,13 +325,10 @@ export default {
       this.dialog = true;
       this.$v.$reset();
 
-      const selectedPublisher = this.publishers.find(
-        (publisher) => publisher.id === book.publisher.id
-      );
       this.bookId = book.id;
       this.name = book.name;
       this.author = book.author;
-      this.publisher = selectedPublisher;
+      this.publisher = book.publisherId;
       this.release = book.release;
       this.quantity = book.quantity;
       this.rented = book.rented;
@@ -343,13 +341,10 @@ export default {
         this.$v.$touch();
         if (!this.$v.$error) {
           if (this.ModalTitle === "Adicionar Livro") {
-            const selectedPublisher = this.publishers.find(
-              (publisher) => publisher.name === this.publisher
-            );
             const createdBook = {
               name: this.name,
               author: this.author,
-              publisherId: selectedPublisher.id,
+              publisherId: this.publisher,
               release: this.release,
               quantity: this.quantity,
               rented: "0",
@@ -364,6 +359,7 @@ export default {
                 });
                 this.closeModal();
                 this.getBooks();
+                this.getPublishers();
               })
               .catch((error) => {
                 console.error("Erro ao adicionar o livro:", error);
@@ -376,14 +372,11 @@ export default {
                 });
               });
           } else {
-            const selectedPublisher = this.publishers.find(
-              (publisher) => publisher === this.publisher
-            );
             const updatedBook = {
               id: this.bookId,
               name: this.name,
               author: this.author,
-              publisherId: selectedPublisher.id,
+              publisherId: this.publisher,
               release: this.release,
               quantity: this.quantity,
               rented: this.rented,
@@ -398,6 +391,7 @@ export default {
                 });
                 this.closeModal();
                 this.getBooks();
+                this.getPublishers();
               })
               .catch((error) => {
                 console.error("Erro ao atualizar livro:", error);
@@ -415,11 +409,6 @@ export default {
     },
     openModalDelete(book) {
       this.bookId = book.id;
-      this.name = book.name;
-      this.author = book.author;
-      this.publisher = book.publisher;
-      this.release = book.release;
-      this.quantity = book.quantity;
       this.dialogDelete = true;
     },
     closeModalDelete() {
@@ -428,24 +417,19 @@ export default {
     confirmDelete() {
       const deletedBook = {
         id: this.bookId,
-        name: this.name,
-        author: this.author,
-        publisher: this.publisher,
-        release: this.release,
       };
       Book.delete(deletedBook)
-        .then((response) => {
-          if (response.status === 200) {
-            Swal.fire({
-              icon: "success",
-              title: "Livro deletado com êxito!",
-              showConfirmButton: false,
-              timer: 3500,
-            });
-            this.closeModalDelete();
-            this.getBooks();
-            this.page = 1;
-          }
+        .then(() => {
+          Swal.fire({
+            icon: "success",
+            title: "Livro deletado com êxito!",
+            showConfirmButton: false,
+            timer: 3500,
+          });
+          this.closeModalDelete();
+          this.getBooks();
+          this.getPublishers();
+          this.page = 1;
         })
         .catch((error) => {
           console.error("Erro ao deletar o livro:", error);

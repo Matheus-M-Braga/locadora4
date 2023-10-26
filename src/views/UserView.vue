@@ -358,10 +358,6 @@ export default {
     },
     openModalDelete(user) {
       this.userId = user.id;
-      this.name = user.name;
-      this.address = user.address;
-      this.city = user.city;
-      this.email = user.email;
       this.dialogDelete = true;
     },
     closeModalDelete() {
@@ -370,10 +366,6 @@ export default {
     confirmDelete() {
       const deletedUser = {
         id: this.userId,
-        name: this.name,
-        address: this.address,
-        city: this.city,
-        email: this.email,
       };
       User.delete(deletedUser)
         .then(() => {

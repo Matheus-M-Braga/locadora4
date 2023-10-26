@@ -73,6 +73,7 @@
                 <v-select
                   v-model="book"
                   :items="books"
+                  item-value="id"
                   item-text="name"
                   label="Livro"
                   required
@@ -85,6 +86,7 @@
                 <v-select
                   v-model="user"
                   :items="users"
+                  item-value="id"
                   item-text="name"
                   label="Usuário"
                   required
@@ -219,8 +221,8 @@ export default {
       books: [],
       users: [],
       id: 0,
-      book: "",
-      user: "",
+      book: null,
+      user: null,
       rentalDate: "",
       forecastDate: "",
       returnDate: "",
@@ -314,7 +316,7 @@ export default {
       const [day, month, year] = date.split("/");
       let formattedDate = `-${day}`;
 
-      if(month){
+      if (month) {
         formattedDate = `-${month}-${day}`;
       }
 
@@ -358,7 +360,6 @@ export default {
         }
       } finally {
         this.loadingTable = false;
-        console.log(this.rentals);
       }
     },
     async getBooks() {
@@ -387,7 +388,6 @@ export default {
         returnDate: "ReturnDate",
         status: "Status",
       };
-      console.log(options);
       if (options.sortBy[0] || options.sortDesc[0]) {
         this.OrderByProperty = sortByMapping[options.sortBy[0]];
         this.OrderByDesc = options.sortDesc[0];
@@ -413,8 +413,8 @@ export default {
       this.dialog = true;
       this.$v.$reset();
 
-      this.book = "";
-      this.user = "";
+      this.book = null;
+      this.user = null;
       this.rentalDate = this.getCurrentDate();
       this.forecastDate = "";
       this.returnDate = "";
@@ -426,16 +426,9 @@ export default {
       this.$v.$touch();
       if (!this.$v.$error) {
         if (this.ModalTitle === "Adicionar Aluguel") {
-          const selectedBook = this.books.find(
-            (livro) => livro.name === this.book
-          );
-          const selectedUser = this.users.find(
-            (usuario) => usuario.name === this.user
-          );
-
           const createdRental = {
-            bookId: selectedBook.id,
-            userId: selectedUser.id,
+            bookId: this.user,
+            userId: this.book,
             rentalDate: this.rentalDate,
             forecastDate: this.forecastDate,
           };
@@ -472,17 +465,7 @@ export default {
       this.dialogDelete = false;
     },
     confirmDelete(rental) {
-      const selectedBook = this.books.find((book) => book.name === rental.book);
-      const selectedUser = this.users.find((user) => user.name === rental.user);
-      const deletedRental = {
-        id: rental.id,
-        book: selectedBook,
-        user: selectedUser,
-        rentalDate: this.parseDate(rental.rentalDate),
-        forecastDate: this.parseDate(rental.forecastDate),
-        returnDate: rental.returnDate !== "..." ? rental.returnDate : null,
-      };
-      Rental.delete(deletedRental)
+      Rental.delete(rental)
         .then(() => {
           Swal.fire({
             icon: "success",
@@ -512,14 +495,8 @@ export default {
       this.update = { ...rental };
     },
     confirmDevol(rental) {
-      const selectedBook = this.books.find((book) => book.name === rental.book);
-      const selectedUser = this.users.find((user) => user.name === rental.user);
       const returnedRental = {
         id: rental.id,
-        book: selectedBook ? { ...selectedBook } : this.book,
-        user: selectedUser ? { ...selectedUser } : this.user,
-        rentalDate: this.parseDate(rental.rentalDate),
-        forecastDate: this.parseDate(rental.forecastDate),
         returnDate: new Date().toISOString().substr(0, 10),
       };
       Rental.update(returnedRental)

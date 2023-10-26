@@ -305,8 +305,6 @@ export default {
     },
     openModalDelete(publisher) {
       this.publisherId = publisher.id;
-      this.name = publisher.name;
-      this.city = publisher.city;
       this.dialogDelete = true;
     },
     closeModalDelete() {
@@ -315,8 +313,6 @@ export default {
     confirmDelete() {
       const deletedPublisher = {
         id: this.publisherId,
-        name: this.name,
-        city: this.city,
       };
       Publisher.delete(deletedPublisher)
         .then(() => {
