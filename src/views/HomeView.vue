@@ -60,18 +60,10 @@ export default {
     loadingCard: true,
     books: [],
     availableBooks: 0,
-    rented: 0,
-    users: 0,
-    publishers: 0,
-    totalUsers: 0,
-    totalBooks: 0,
-    totalPublishers: 0,
-    totalRentals: 0,
-    Listusers: [],
-    Listpublishers: [],
-    total: 0,
     rentals: [],
     lastRented: "",
+    users: 0,
+    publishers: 0,
   }),
   async mounted() {
     try {
@@ -80,13 +72,11 @@ export default {
       await this.getUsers();
       await this.getPublishers();
       await this.getAvailableBooks();
-      await this.getPendingRentals();
       await this.lastRent();
 
       this.updateCardValues();
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
-      
     } finally {
       this.loadingCard = false;
     }
@@ -101,8 +91,8 @@ export default {
       this.cards[1].value = this.rentals.length;
       this.cards[2].value = this.availableBooks;
       this.cards[3].value = this.books.length;
-      this.cards[4].value = this.users.length;
-      this.cards[5].value = this.publishers.length;
+      this.cards[4].value = this.users;
+      this.cards[5].value = this.publishers;
     },
     async getBooks() {
       try {
@@ -122,16 +112,16 @@ export default {
     },
     async getUsers() {
       try {
-        const response = await User.listSelect();
-        this.users = response.data.data;
+        const response = await User.list();
+        this.users = response.data.totalRegisters;
       } catch (error) {
         console.error("Erro ao buscar usuários:", error);
       }
     },
     async getPublishers() {
       try {
-        const response = await Publisher.listSelect();
-        this.publishers = response.data.data;
+        const response = await Publisher.list();
+        this.publishers = response.data.totalRegisters;
       } catch (error) {
         console.error("Erro ao buscar editora: ", error);
       }
@@ -142,17 +132,15 @@ export default {
         0
       );
     },
-    async getPendingRentals() {
-      const filtereds = this.rentals.filter(
-        (rental) => rental.status == "Pendente"
-      );
-      this.rented = filtereds.length;
-    },
     async lastRent() {
-      const last = await this.rentals.reduce((prev, current) => {
-        return prev.id < current.id ? current : prev;
-      });
-      this.lastRented = last.book.name;
+      if (this.rentals.length > 0) {
+        const last = await this.rentals.reduce((prev, current) => {
+          return prev.id < current.id ? current : prev;
+        });
+        this.lastRented = last.book.name;
+      } else {
+        this.lastRented = "Sem dados";
+      }
     },
   },
 };

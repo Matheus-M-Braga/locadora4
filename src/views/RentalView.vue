@@ -427,8 +427,8 @@ export default {
       if (!this.$v.$error) {
         if (this.ModalTitle === "Adicionar Aluguel") {
           const createdRental = {
-            bookId: this.user,
-            userId: this.book,
+            bookId: this.book,
+            userId: this.user,
             rentalDate: this.rentalDate,
             forecastDate: this.forecastDate,
           };
@@ -500,16 +500,18 @@ export default {
         returnDate: new Date().toISOString().substr(0, 10),
       };
       Rental.update(returnedRental)
-        .then(() => {
-          Swal.fire({
-            icon: "success",
-            title: "Devolução realizada com êxito!",
-            showConfirmButton: false,
-            timer: 3500,
-          });
-          this.closeModalDevol();
-          this.getRentals();
-          this.getBooks();
+        .then((response) => {
+          if (response.status == 200) {
+            Swal.fire({
+              icon: "success",
+              title: "Devolução realizada com êxito!",
+              showConfirmButton: false,
+              timer: 3500,
+            });
+            this.closeModalDevol();
+            this.getRentals();
+            this.getBooks();
+          }
         })
         .catch((error) => {
           console.error("Erro ao devolver aluguel:", error);

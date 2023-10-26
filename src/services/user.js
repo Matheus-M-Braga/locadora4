@@ -2,6 +2,9 @@ import axios from "./config";
 
 export default {
   list: (params) => {
+    if (!params) {
+      params = {};
+    }
     return axios.get("users", {
       params: {
         Page: params.Page,

@@ -347,7 +347,6 @@ export default {
               publisherId: this.publisher,
               release: this.release,
               quantity: this.quantity,
-              rented: "0",
             };
             Book.create(createdBook)
               .then(() => {
