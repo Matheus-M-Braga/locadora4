@@ -449,6 +449,7 @@ export default {
               });
               this.closeModal();
               this.getRentals();
+              this.getBooks();
             })
             .catch((error) => {
               console.error("Erro ao adicionar o aluguel:", error);
@@ -490,6 +491,7 @@ export default {
             timer: 3500,
           });
           this.getRentals();
+          this.getBooks();
           this.closeModalDelete();
           this.page = 1;
         })
@@ -530,6 +532,7 @@ export default {
           });
           this.closeModalDevol();
           this.getRentals();
+          this.getBooks();
         })
         .catch((error) => {
           console.error("Erro ao devolver aluguel:", error);
