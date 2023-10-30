@@ -188,7 +188,7 @@ export default {
     async getPublishers() {
       try {
         const response = await Publisher.list({
-          Page: this.page,
+          PageNumber: this.page,
           PageSize: this.pageSize,
           OrderByProperty: this.OrderByProperty,
           OrderByDesc: this.OrderByDesc,

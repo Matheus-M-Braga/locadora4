@@ -12,6 +12,8 @@ export default {
   data() {
     return {
       rentals: [],
+      total: 0,
+      registers: [],
       loadingChart: true,
     };
   },
@@ -21,14 +23,18 @@ export default {
   methods: {
     async listStatus() {
       try {
-        const rentals = await Rental.listCount();
+        const data = await Rental.list();
+        this.total = data.data.totalRegisters;
+        if (this.total > 0) {
+          const result = await Rental.list({ PageSize: this.total });
+          this.registers = result.data;
+        }
         const status = {
           "No prazo": 0,
           Atrasado: 0,
           Pendente: 0,
         };
-        const result = rentals.data;
-        result.data.forEach((rental) => {
+        this.registers.data.forEach((rental) => {
           const rentalStatus = rental.status;
           if (rentalStatus === "Atrasado") {
             status["Atrasado"]++;

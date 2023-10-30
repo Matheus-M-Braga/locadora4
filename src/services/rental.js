@@ -7,16 +7,13 @@ export default {
     }
     return axios.get("rentals", {
       params: {
-        Page: params.Page,
+        PageNumber: params.PageNumber,
         PageSize: params.PageSize,
         OrderByProperty: params.OrderByProperty,
         OrderByDesc: params.OrderByDesc,
         FilterValue: params.FilterValue,
       },
     });
-  },
-  listCount: () => {
-    return axios.get("rentals/count");
   },
   create: (rental) => {
     return axios.post("rentals", rental);

@@ -59,11 +59,13 @@ export default {
     ],
     loadingCard: true,
     books: [],
+    totalBooks: 0,
     availableBooks: 0,
     rentals: [],
+    totalRentals: 0,
     lastRented: "",
-    users: 0,
-    publishers: 0,
+    totalUsers: 0,
+    totalPublishers: 0,
   }),
   async mounted() {
     try {
@@ -88,24 +90,32 @@ export default {
   methods: {
     updateCardValues() {
       this.cards[0].value = this.lastRented;
-      this.cards[1].value = this.rentals.length;
+      this.cards[1].value = this.totalRentals;
       this.cards[2].value = this.availableBooks;
-      this.cards[3].value = this.books.length;
-      this.cards[4].value = this.users;
-      this.cards[5].value = this.publishers;
+      this.cards[3].value = this.totalBooks;
+      this.cards[4].value = this.totalUsers;
+      this.cards[5].value = this.totalPublishers;
     },
     async getBooks() {
       try {
-        const response = await Book.listCount();
-        this.books = response.data.data;
+        const response = await Book.list();
+        this.totalBooks = response.data.totalRegisters;
+        if (this.totalBooks > 0) {
+          const data = await Book.list({ PageSize: this.totalBooks });
+          this.books = data.data.data;
+        }
       } catch (error) {
         console.error("Erro ao buscar livros: ", error);
       }
     },
     async getRentals() {
       try {
-        const response = await Rental.listCount();
-        this.rentals = response.data.data;
+        const response = await Rental.list();
+        this.totalRentals = response.data.totalRegisters;
+        if (this.totalRentals > 0) {
+          const data = await Rental.list({ PageSize: this.totalRentals });
+          this.rentals = data.data.data;
+        }
       } catch (error) {
         console.error("Erro ao buscar aluguéis: ", error);
       }
@@ -113,7 +123,7 @@ export default {
     async getUsers() {
       try {
         const response = await User.list();
-        this.users = response.data.totalRegisters;
+        this.totalUsers = response.data.totalRegisters;
       } catch (error) {
         console.error("Erro ao buscar usuários:", error);
       }
@@ -121,7 +131,7 @@ export default {
     async getPublishers() {
       try {
         const response = await Publisher.list();
-        this.publishers = response.data.totalRegisters;
+        this.totalPublishers = response.data.totalRegisters;
       } catch (error) {
         console.error("Erro ao buscar editora: ", error);
       }

@@ -7,7 +7,7 @@ export default {
     }
     return axios.get("publishers", {
       params: {
-        Page: params.Page,
+        PageNumber: params.PageNumber,
         PageSize: params.PageSize,
         OrderByProperty: params.OrderByProperty,
         OrderByDesc: params.OrderByDesc,

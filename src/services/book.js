@@ -7,7 +7,7 @@ export default {
     }
     return axios.get("books", {
       params: {
-        Page: params.Page,
+        PageNumber: params.PageNumber,
         PageSize: params.PageSize,
         OrderByProperty: params.OrderByProperty,
         OrderByDesc: params.OrderByDesc,
@@ -17,9 +17,6 @@ export default {
   },
   listSelect: () => {
     return axios.get("books/getallselect");
-  },
-  listCount: () => {
-    return axios.get("books/count");
   },
   create: (book) => {
     return axios.post("books", book);

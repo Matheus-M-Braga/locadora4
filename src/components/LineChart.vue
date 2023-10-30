@@ -12,6 +12,7 @@ export default {
   data() {
     return {
       rentals: [],
+      total: 0,
       mostrented: [],
       loadingChart: true,
     };
@@ -22,8 +23,12 @@ export default {
   methods: {
     async getRentals() {
       try {
-        const result = await Rental.listCount();
-        this.rentals = result.data;
+        const result = await Rental.list();
+        this.total = result.data.totalRegisters;
+        if (this.total > 0) {
+          const data = await Rental.list({ PageSize: this.total });
+          this.rentals = data.data;
+        }
 
         const RentalCount = {};
         this.rentals.data.forEach((rental) => {
@@ -53,7 +58,7 @@ export default {
     },
     async updateBarChart() {
       const ctx = this.$refs.myChart.getContext("2d");
-      const topFour = this.mostrented.slice(0, 4);
+      const topFour = this.mostrented.slice(0, 3);
 
       var labels = topFour.map((item) => this.truncateLabel(item.bookname));
       var data = topFour.map((item) => this.truncateLabel(item.quantity));
