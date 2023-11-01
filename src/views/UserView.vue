@@ -52,48 +52,45 @@
             </v-card-title>
             <v-card-text>
               <v-col>
-                <v-col cols="12">
-                  <v-text-field
-                    v-model="name"
-                    label="Nome"
-                    required
-                    :error-messages="NameError"
-                    @input="$v.name.$touch()"
-                    @blur="$v.name.$touch()"
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12">
-                  <v-text-field
-                    v-model="city"
-                    label="Cidade"
-                    required
-                    :error-messages="CityError"
-                    @input="$v.city.$touch()"
-                    @blur="$v.city.$touch()"
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12">
-                  <v-text-field
-                    v-model="address"
-                    label="Endereço"
-                    required
-                    :error-messages="AddressError"
-                    @input="$v.address.$touch()"
-                    @blur="$v.address.$touch()"
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12">
-                  <v-text-field
-                    v-model="email"
-                    :counter="50"
-                    label="Email"
-                    type="email"
-                    required
-                    :error-messages="EmailError"
-                    @input="$v.email.$touch()"
-                    @blur="$v.email.$touch()"
-                  ></v-text-field>
-                </v-col>
+                <v-form ref="form" @submit.prevent="confirm">
+                  <v-col cols="12">
+                    <v-text-field
+                      v-model="name"
+                      label="Nome"
+                      :counter="50"
+                      required
+                      :rules="nameRules"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12">
+                    <v-text-field
+                      v-model="city"
+                      :counter="50"
+                      label="Cidade"
+                      required
+                      :rules="cityRules"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12">
+                    <v-text-field
+                      v-model="address"
+                      :counter="50"
+                      label="Endereço"
+                      required
+                      :rules="adressRules"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12">
+                    <v-text-field
+                      v-model="email"
+                      :counter="50"
+                      label="Email"
+                      type="email"
+                      required
+                      :rules="emailRules"
+                    ></v-text-field>
+                  </v-col>
+                </v-form>
               </v-col>
             </v-card-text>
             <v-card-actions>
@@ -137,8 +134,6 @@
 <script>
 import User from "@/services/user";
 import Swal from "sweetalert2";
-import { validationMixin } from "vuelidate";
-import { required, maxLength, email } from "vuelidate/lib/validators";
 import TableTop from "@/components/TableTop";
 
 export default {
@@ -146,13 +141,6 @@ export default {
     TableTop,
   },
 
-  mixins: [validationMixin],
-  validations: {
-    name: { required },
-    address: { required },
-    city: { required },
-    email: { required, email, maxLength: maxLength(50) },
-  },
   data() {
     return {
       noDataText: "Nenhum registro encontrado",
@@ -186,38 +174,29 @@ export default {
       userId: null,
       emailExists: false,
       loadingTable: true,
+      nameRules: [
+        (v) => !!v || "Informe o nome",
+        (v) => (v && v.length >= 3) || "Mínimo 3 caracteres",
+        (v) => (v && v.length <= 50) || "Máximo 50 caracteres",
+      ],
+      cityRules: [
+        (v) => !!v || "Informe a cidade",
+        (v) => (v && v.length >= 3) || "Mínimo 3 caracteres",
+        (v) => (v && v.length <= 50) || "Máximo 50 caracteres",
+      ],
+      adressRules: [
+        (v) => !!v || "Informe o endereço",
+        (v) => (v && v.length >= 3) || "Mínimo 3 caracteres",
+        (v) => (v && v.length <= 50) || "Máximo 50 caracteres",
+      ],
+      emailRules: [
+        (v) => !!v || "Informe o email",
+        (v) => (v && v.length >= 3) || "Mínimo 3 caracteres",
+        (v) => (v && v.length <= 50) || "Máximo 50 caracteres",
+        (v) =>
+          /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || "Informe um email válido",
+      ],
     };
-  },
-  computed: {
-    NameError() {
-      const errors = [];
-      if (!this.$v.name.$dirty) return errors;
-      !this.$v.name.required && errors.push("Informe o nome.");
-      return errors;
-    },
-    AddressError() {
-      const errors = [];
-      if (!this.$v.address.$dirty) return errors;
-      !this.$v.address.required && errors.push("Informe o endereco.");
-      return errors;
-    },
-    CityError() {
-      const errors = [];
-      if (!this.$v.city.$dirty) return errors;
-      !this.$v.city.required && errors.push("Informe a cidade.");
-      return errors;
-    },
-    EmailError() {
-      const errors = [];
-      if (!this.$v.email.$dirty) return errors;
-      !this.$v.email.maxLength && errors.psuh("O limite é de 50 caracteres.");
-      !this.$v.email.email && errors.push("Informe um e-mail válido.");
-      !this.$v.email.required && errors.push("Informe o e-mail.");
-      if (this.emailExists) {
-        errors.push("Este e-mail já existe no sistema.");
-      }
-      return errors;
-    },
   },
   mounted() {
     this.getUsers();
@@ -269,7 +248,7 @@ export default {
     openModalCreate() {
       this.ModalTitle = "Adicionar Usuário";
       this.dialog = true;
-      this.$v.$reset();
+      this.$refs.form.resetValidation();
 
       this.name = "";
       this.address = "";
@@ -279,7 +258,7 @@ export default {
     openModalEdit(user) {
       this.ModalTitle = "Editar Usuário";
       this.dialog = true;
-      this.$v.$reset();
+      this.$refs.form.resetValidation();
 
       this.userId = user.id;
       this.name = user.name;
@@ -290,69 +269,70 @@ export default {
     closeModal() {
       this.dialog = false;
     },
-    confirm() {
-      if (!this.emailExists) {
-        this.$v.$touch();
-        if (!this.$v.$error) {
-          if (this.ModalTitle === "Adicionar Usuário") {
-            const createdUser = {
-              name: this.name,
-              address: this.address,
-              city: this.city,
-              email: this.email,
-            };
-            User.create(createdUser)
-              .then(() => {
-                Swal.fire({
-                  icon: "success",
-                  title: "Usuário adicionado com êxito!",
-                  showConfirmButton: false,
-                  timer: 3500,
-                });
-                this.getUsers();
-                this.closeModal();
-              })
-              .catch((error) => {
-                console.error("Erro ao adicionar o usuario:", error);
-                Swal.fire({
-                  icon: "error",
-                  title: "Erro ao adicionar usuário.",
-                  text: error.response.data.message,
-                  showConfirmButton: false,
-                  timer: 3500,
-                });
+    async confirm() {
+      if (this.$refs.form && typeof this.$refs.form.validate === "function") {
+        const isValid = await this.$refs.form.validate();
+        if (!isValid) {
+          return;
+        }
+        if (this.ModalTitle === "Adicionar Usuário") {
+          const createdUser = {
+            name: this.name,
+            address: this.address,
+            city: this.city,
+            email: this.email,
+          };
+          User.create(createdUser)
+            .then(() => {
+              Swal.fire({
+                icon: "success",
+                title: "Usuário adicionado com êxito!",
+                showConfirmButton: false,
+                timer: 3500,
               });
-          } else {
-            const updatedUser = {
-              id: this.userId,
-              name: this.name,
-              address: this.address,
-              city: this.city,
-              email: this.email,
-            };
-            User.update(updatedUser)
-              .then(() => {
-                Swal.fire({
-                  icon: "success",
-                  title: "Usuário atualizado com êxito!",
-                  showConfirmButton: false,
-                  timer: 3500,
-                });
-                this.getUsers();
-                this.closeModal();
-              })
-              .catch((error) => {
-                console.error("Erro ao atualizar usuário:", error);
-                Swal.fire({
-                  icon: "success",
-                  title: "Erro ao atualizar usuário.",
-                  text: error.response.data.message,
-                  showConfirmButton: false,
-                  timer: 3500,
-                });
-                this.closeModal();
+              this.getUsers();
+              this.closeModal();
+            })
+            .catch((error) => {
+              console.error("Erro ao adicionar o usuario:", error);
+              Swal.fire({
+                icon: "error",
+                title: "Erro ao adicionar usuário.",
+                text: error.response.data.message,
+                showConfirmButton: false,
+                timer: 3500,
               });
-          }
+            });
+        } else {
+          const updatedUser = {
+            id: this.userId,
+            name: this.name,
+            address: this.address,
+            city: this.city,
+            email: this.email,
+          };
+          User.update(updatedUser)
+            .then(() => {
+              Swal.fire({
+                icon: "success",
+                title: "Usuário atualizado com êxito!",
+                showConfirmButton: false,
+                timer: 3500,
+              });
+              this.getUsers();
+              this.closeModal();
+            })
+            .catch((error) => {
+              console.error("Erro ao atualizar usuário:", error);
+              Swal.fire({
+                icon: "success",
+                title: "Erro ao atualizar usuário.",
+                text: error.response.data.message,
+                showConfirmButton: false,
+                timer: 3500,
+              });
+              this.closeModal();
+            });
         }
       }
     },

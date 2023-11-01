@@ -51,61 +51,59 @@
           </v-card-title>
           <v-card-text>
             <v-col>
-              <v-col cols="12">
-                <v-text-field
-                  v-model="name"
-                  label="Nome"
-                  required
-                  :error-messages="NameError"
-                  @input="$v.name.$touch()"
-                  @blur="$v.name.$touch()"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12">
-                <v-text-field
-                  v-model="author"
-                  label="Autor"
-                  required
-                  :error-messages="AuthorError"
-                  @input="$v.author.$touch()"
-                  @blur="$v.author.$touch()"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12">
-                <v-select
-                  v-model="publisher"
-                  :items="publishers"
-                  item-value="id"
-                  item-text="name"
-                  label="Editora"
-                  required
-                  :error-messages="PublisherError"
-                  @input="$v.publisher.$touch()"
-                  @blur="$v.publisher.$touch()"
-                ></v-select>
-              </v-col>
-              <v-col cols="12">
-                <v-text-field
-                  v-model="release"
-                  label="Lançamento"
-                  required
-                  :error-messages="DateError"
-                  @input="$v.release.$touch()"
-                  @blur="$v.release.$touch()"
-                  type="number"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12">
-                <v-text-field
-                  v-model="quantity"
-                  label="Estoque"
-                  required
-                  :error-messages="AmountError"
-                  @input="$v.quantity.$touch()"
-                  @blur="$v.quantity.$touch()"
-                  type="number"
-                ></v-text-field>
-              </v-col>
+              <v-form ref="form" @sumbit.prevent="confirm">
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="name"
+                    :counter="50"
+                    label="Nome"
+                    required
+                    :rules="nameRules"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="author"
+                    :counter="50"
+                    label="Autor"
+                    required
+                    :rules="authorRules"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-autocomplete
+                    v-model="publisher"
+                    :items="publishers"
+                    item-value="id"
+                    item-text="name"
+                    label="Editora"
+                    required
+                    :rules="publisherRules"
+                  ></v-autocomplete>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="release"
+                    :counter="4"
+                    :step="1"
+                    label="Lançamento"
+                    required
+                    type="number"
+                    :rules="releaseRules"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="quantity"
+                    :counter="4"
+                    :step="1"
+                    label="Estoque"
+                    required
+                    type="number"
+                    :rules="quantityRules"
+                  ></v-text-field>
+                </v-col>
+              </v-form>
             </v-col>
           </v-card-text>
           <v-card-actions>
@@ -147,28 +145,13 @@
 import Book from "@/services/book";
 import Publisher from "@/services/publisher";
 import Swal from "sweetalert2";
-import { validationMixin } from "vuelidate";
-import { required, maxLength, minLength } from "vuelidate/lib/validators";
 import TableTop from "@/components/TableTop.vue";
 
 export default {
   components: {
     TableTop,
   },
-  mixins: [validationMixin],
-  validations: {
-    name: { required },
-    author: { required },
-    publisher: { required },
-    release: { required, minLength: minLength(4), maxLength: maxLength(4) },
-    quantity: {
-      required,
-      maxLength: maxLength(4),
-      isPositive(value) {
-        return value > 0;
-      },
-    },
-  },
+
   data() {
     return {
       noDataText: "Nenhum registro encontrado",
@@ -194,8 +177,8 @@ export default {
       name: "",
       author: "",
       publisher: null,
-      release: 0,
-      quantity: 0,
+      release: null,
+      quantity: null,
       rented: 0,
       totalItems: 0,
       pageSize: 0,
@@ -207,49 +190,30 @@ export default {
       bookId: null,
       nameExists: false,
       loadingTable: true,
+      nameRules: [
+        (v) => !!v || "Informe o nome",
+        (v) => (v && v.length >= 3) || "Mínimo 3 caracteres",
+        (v) => (v && v.length <= 50) || "Máximo 50 caracteres",
+      ],
+      authorRules: [
+        (v) => !!v || "Informe o autor",
+        (v) => (v && v.length >= 3) || "Mínimo 3 caracteres",
+        (v) => (v && v.length <= 50) || "Máximo 50 caracteres",
+      ],
+      publisherRules: [(v) => !!v || "Informe a editora"],
+      releaseRules: [
+        (v) => !!v || "Informe o ano de lançamento",
+        (v) => (v && v.length <= 4) || "Máximo 4 caracteres",
+        (v) =>
+          (v && v <= new Date().getFullYear()) ||
+          `Não é possível ser posterior a ${new Date().getFullYear()}`,
+      ],
+      quantityRules: [
+        (v) => !!v || "Informe a quantidade",
+        (v) => v >= 0 || "Estoque deve ser maior que 0",
+        (v) => (v && v.length <= 4) || "Máximo 4 caracteres",
+      ],
     };
-  },
-  computed: {
-    NameError() {
-      const errors = [];
-      if (!this.$v.name.$dirty) return errors;
-      !this.$v.name.required && errors.push("Informe o nome.");
-      if (this.nameExists) {
-        errors.push("Livro já cadastrado!");
-      }
-      return errors;
-    },
-    AuthorError() {
-      const errors = [];
-      if (!this.$v.author.$dirty) return errors;
-      !this.$v.author.required && errors.push("Informe o autor.");
-      return errors;
-    },
-    PublisherError() {
-      const errors = [];
-      if (!this.$v.publisher.$dirty) return errors;
-      !this.$v.publisher.required && errors.push("Informe a editora.");
-      return errors;
-    },
-    DateError() {
-      const errors = [];
-      if (!this.$v.release.$dirty) return errors;
-      !this.$v.release.maxLength &&
-        errors.push("Necessário 4 dígitos para o ano de lançamento.");
-      !this.$v.release.minLength &&
-        errors.push("Necessário 4 dígitos para o ano de lançamento.");
-      !this.$v.release.required && errors.push("Informe o ano de Lançamento.");
-      return errors;
-    },
-    AmountError() {
-      const errors = [];
-      if (!this.$v.quantity.$dirty) return errors;
-      !this.$v.quantity.maxLength && errors.push("O limite é de 4 dígitos.");
-      !this.$v.quantity.required && errors.push("Informe o estoque.");
-      !this.$v.quantity.isPositive &&
-        errors.push("O estoque deve ser superio a 0.");
-      return errors;
-    },
   },
   mounted() {
     this.getBooks();
@@ -312,7 +276,7 @@ export default {
     openModalCreate() {
       this.ModalTitle = "Adicionar Livro";
       this.dialog = true;
-      this.$v.$reset();
+      this.$refs.form.resetValidation();
 
       this.name = "";
       this.author = "";
@@ -323,7 +287,7 @@ export default {
     openModalEdit(book) {
       this.ModalTitle = "Editar livro";
       this.dialog = true;
-      this.$v.$reset();
+      this.$refs.form.resetValidation();
 
       this.bookId = book.id;
       this.name = book.name;
@@ -336,73 +300,74 @@ export default {
     closeModal() {
       this.dialog = false;
     },
-    confirm() {
-      if (!this.nameExists) {
-        this.$v.$touch();
-        if (!this.$v.$error) {
-          if (this.ModalTitle === "Adicionar Livro") {
-            const createdBook = {
-              name: this.name,
-              author: this.author,
-              publisherId: this.publisher,
-              release: this.release,
-              quantity: this.quantity,
-            };
-            Book.create(createdBook)
-              .then(() => {
-                Swal.fire({
-                  icon: "success",
-                  title: "Livro adicionado com êxito!",
-                  showConfirmButton: false,
-                  timer: 3500,
-                });
-                this.closeModal();
-                this.getBooks();
-                this.getPublishers();
-              })
-              .catch((error) => {
-                console.error("Erro ao adicionar o livro:", error);
-                Swal.fire({
-                  icon: "error",
-                  title: "Erro ao adicionar o livro.",
-                  text: error.response.data.message,
-                  showConfirmButton: false,
-                  timer: 3500,
-                });
+    async confirm() {
+      if (this.$refs.form && typeof this.$refs.form.validate === "function") {
+        const isValid = await this.$refs.form.validate();
+        if (!isValid) {
+          return;
+        }
+        if (this.ModalTitle === "Adicionar Livro") {
+          const createdBook = {
+            name: this.name,
+            author: this.author,
+            publisherId: this.publisher,
+            release: this.release,
+            quantity: this.quantity,
+          };
+          Book.create(createdBook)
+            .then(() => {
+              Swal.fire({
+                icon: "success",
+                title: "Livro adicionado com êxito!",
+                showConfirmButton: false,
+                timer: 3500,
               });
-          } else {
-            const updatedBook = {
-              id: this.bookId,
-              name: this.name,
-              author: this.author,
-              publisherId: this.publisher,
-              release: this.release,
-              quantity: this.quantity,
-              rented: this.rented,
-            };
-            Book.update(updatedBook)
-              .then(() => {
-                Swal.fire({
-                  icon: "success",
-                  title: "Livro atualizado com êxito!",
-                  showConfirmButton: false,
-                  timer: 3500,
-                });
-                this.closeModal();
-                this.getBooks();
-                this.getPublishers();
-              })
-              .catch((error) => {
-                console.error("Erro ao atualizar livro:", error);
-                Swal.fire({
-                  icon: "error",
-                  title: "Erro ao atualizar o livro.",
-                  text: error.response.data.message,
-                  showConfirmButton: false,
-                  timer: 3500,
-                });
+              this.closeModal();
+              this.getBooks();
+              this.getPublishers();
+            })
+            .catch((error) => {
+              console.error("Erro ao adicionar o livro:", error);
+              Swal.fire({
+                icon: "error",
+                title: "Erro ao adicionar o livro.",
+                text: error.response.data.message,
+                showConfirmButton: false,
+                timer: 3500,
               });
-          }
+            });
+        } else {
+          const updatedBook = {
+            id: this.bookId,
+            name: this.name,
+            author: this.author,
+            publisherId: this.publisher,
+            release: this.release,
+            quantity: this.quantity,
+            rented: this.rented,
+          };
+          Book.update(updatedBook)
+            .then(() => {
+              Swal.fire({
+                icon: "success",
+                title: "Livro atualizado com êxito!",
+                showConfirmButton: false,
+                timer: 3500,
+              });
+              this.closeModal();
+              this.getBooks();
+              this.getPublishers();
+            })
+            .catch((error) => {
+              console.error("Erro ao atualizar livro:", error);
+              Swal.fire({
+                icon: "error",
+                title: "Erro ao atualizar o livro.",
+                text: error.response.data.message,
+                showConfirmButton: false,
+                timer: 3500,
+              });
+            });
         }
       }
     },

@@ -52,26 +52,26 @@
             </v-card-title>
             <v-card-text>
               <v-col>
-                <v-col cols="12">
-                  <v-text-field
-                    v-model="name"
-                    label="Nome"
-                    required
-                    :error-messages="NameError"
-                    @input="$v.name.$touch()"
-                    @blur="$v.name.$touch()"
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12">
-                  <v-text-field
-                    v-model="city"
-                    label="Cidade"
-                    required
-                    :error-messages="CityError"
-                    @input="$v.city.$touch()"
-                    @blur="$v.city.$touch()"
-                  ></v-text-field>
-                </v-col>
+                <v-form ref="form" @submit.prevent="confirm">
+                  <v-col cols="12">
+                    <v-text-field
+                      v-model="name"
+                      :counter="50"
+                      label="Nome"
+                      required
+                      :rules="nameRules"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12">
+                    <v-text-field
+                      v-model="city"
+                      :counter="50"
+                      label="Cidade"
+                      required
+                      :rules="cityRules"
+                    ></v-text-field>
+                  </v-col>
+                </v-form>
               </v-col>
               <v-card-actions>
                 <v-spacer></v-spacer>
@@ -115,18 +115,11 @@
 <script>
 import Publisher from "@/services/publisher";
 import Swal from "sweetalert2";
-import { validationMixin } from "vuelidate";
-import { required } from "vuelidate/lib/validators";
 import TableTop from "@/components/TableTop.vue";
 
 export default {
   components: {
     TableTop,
-  },
-  mixins: [validationMixin],
-  validations: {
-    name: { required },
-    city: { required },
   },
   data() {
     return {
@@ -157,25 +150,17 @@ export default {
       publisherId: null,
       nameExists: false,
       loadingTable: true,
+      nameRules: [
+        (v) => !!v || "Informe o nome",
+        (v) => (v && v.length >= 3) || "Mínimo 3 caracteres",
+        (v) => (v && v.length <= 50) || "Máximo 50 caracteres",
+      ],
+      cityRules: [
+        (v) => !!v || "Informe a cidade",
+        (v) => (v && v.length >= 3) || "Mínimo 3 caracteres",
+        (v) => (v && v.length <= 50) || "Máximo 50 caracteres",
+      ],
     };
-  },
-  computed: {
-    // validacao
-    NameError() {
-      const errors = [];
-      if (!this.$v.name.$dirty) return errors;
-      !this.$v.name.required && errors.push("Informe o nome.");
-      if (this.nameExists) {
-        errors.push("Editora já cadastrada!");
-      }
-      return errors;
-    },
-    CityError() {
-      const errors = [];
-      if (!this.$v.city.$dirty) return errors;
-      !this.$v.city.required && errors.push("Informe a cidade.");
-      return errors;
-    },
   },
   mounted() {
     this.getPublishers();
@@ -225,7 +210,7 @@ export default {
     openModalCreate() {
       this.ModalTitle = "Adicionar Editora";
       this.dialog = true;
-      this.$v.$reset();
+      this.$refs.form.resetValidation();
 
       this.name = "";
       this.city = "";
@@ -233,7 +218,7 @@ export default {
     openModalEdit(publisher) {
       this.ModalTitle = "Editar Editora";
       this.dialog = true;
-      this.$v.$reset();
+      this.$refs.form.resetValidation();
 
       this.publisherId = publisher.id;
       this.name = publisher.name;
@@ -243,63 +228,64 @@ export default {
       this.dialog = false;
     },
     async confirm() {
-      if (!this.nameExists) {
-        this.$v.$touch();
-        if (!this.$v.$error) {
-          if (this.ModalTitle === "Adicionar Editora") {
-            const createdPublisher = {
-              name: this.name,
-              city: this.city,
-            };
-            Publisher.create(createdPublisher)
-              .then(() => {
-                Swal.fire({
-                  icon: "success",
-                  title: "Editora adicionada com êxito!",
-                  showConfirmButton: false,
-                  timer: 3500,
-                });
-                this.closeModal();
-                this.getPublishers();
-              })
-              .catch((error) => {
-                console.error("Erro ao adicionar editora:", error);
-                Swal.fire({
-                  icon: "error",
-                  title: "Erro ao adicionar editora.",
-                  text: error.response.data.message,
-                  showConfirmButton: false,
-                  timer: 3500,
-                });
+      if (this.$refs.form && typeof this.$refs.form.validate === "function") {
+        const isValid = await this.$refs.form.validate();
+        if (!isValid) {
+          return;
+        }
+        if (this.ModalTitle === "Adicionar Editora") {
+          const createdPublisher = {
+            name: this.name,
+            city: this.city,
+          };
+          Publisher.create(createdPublisher)
+            .then(() => {
+              Swal.fire({
+                icon: "success",
+                title: "Editora adicionada com êxito!",
+                showConfirmButton: false,
+                timer: 3500,
               });
-          } else {
-            const updatedPublisher = {
-              id: this.publisherId,
-              name: this.name,
-              city: this.city,
-            };
-            Publisher.update(updatedPublisher)
-              .then(() => {
-                Swal.fire({
-                  icon: "success",
-                  title: "Editora atualizada com êxito!",
-                  showConfirmButton: false,
-                  timer: 3500,
-                });
-                this.closeModal();
-                this.getPublishers();
-              })
-              .catch((error) => {
-                console.error("Erro ao atualizar editora:", error);
-                Swal.fire({
-                  icon: "error",
-                  title: "Erro ao atualizar editora.",
-                  text: error.response.data.message,
-                  showConfirmButton: false,
-                  timer: 3500,
-                });
+              this.closeModal();
+              this.getPublishers();
+            })
+            .catch((error) => {
+              console.error("Erro ao adicionar editora:", error);
+              Swal.fire({
+                icon: "error",
+                title: "Erro ao adicionar editora.",
+                text: error.response.data.message,
+                showConfirmButton: false,
+                timer: 3500,
               });
-          }
+            });
+        } else {
+          const updatedPublisher = {
+            id: this.publisherId,
+            name: this.name,
+            city: this.city,
+          };
+          Publisher.update(updatedPublisher)
+            .then(() => {
+              Swal.fire({
+                icon: "success",
+                title: "Editora atualizada com êxito!",
+                showConfirmButton: false,
+                timer: 3500,
+              });
+              this.closeModal();
+              this.getPublishers();
+            })
+            .catch((error) => {
+              console.error("Erro ao atualizar editora:", error);
+              Swal.fire({
+                icon: "error",
+                title: "Erro ao atualizar editora.",
+                text: error.response.data.message,
+                showConfirmButton: false,
+                timer: 3500,
+              });
+            });
         }
       }
     },

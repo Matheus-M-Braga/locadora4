@@ -69,57 +69,50 @@
           </v-card-title>
           <v-card-text>
             <v-col>
-              <v-col cols="12">
-                <v-select
-                  v-model="book"
-                  :items="books"
-                  item-value="id"
-                  item-text="name"
-                  label="Livro"
-                  required
-                  :error-messages="BookError"
-                  @input="$v.book.$touch()"
-                  @blur="$v.book.$touch()"
-                ></v-select>
-              </v-col>
-              <v-col cols="12">
-                <v-select
-                  v-model="user"
-                  :items="users"
-                  item-value="id"
-                  item-text="name"
-                  label="Usuário"
-                  required
-                  :error-messages="UserError"
-                  @input="$v.user.$touch()"
-                  @blur="$v.user.$touch()"
-                ></v-select>
-              </v-col>
-              <v-col cols="12">
-                <v-text-field
-                  disabled
-                  v-model="rentalDate"
-                  label="Data do Aluguel (Hoje)"
-                  required
-                  :error-messages="AlugError"
-                  @input="$v.rentalDate.$touch()"
-                  @blur="$v.rentalDate.$touch()"
-                  type="date"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12">
-                <v-text-field
-                  v-model="forecastDate"
-                  label="Previsão de Devolução"
-                  required
-                  :error-messages="DevolError"
-                  @input="$v.forecastDate.$touch()"
-                  @blur="$v.forecastDate.$touch()"
-                  type="date"
-                  :min="rentalDate"
-                  :max="MaxDate()"
-                ></v-text-field>
-              </v-col>
+              <v-form ref="form" @submit.prevent="confirm">
+                <v-col cols="12">
+                  <v-autocomplete
+                    v-model="book"
+                    :items="books"
+                    item-value="id"
+                    item-text="name"
+                    label="Livro"
+                    required
+                    :rules="bookRules"
+                  ></v-autocomplete>
+                </v-col>
+                <v-col cols="12">
+                  <v-autocomplete
+                    v-model="user"
+                    :items="users"
+                    item-value="id"
+                    item-text="name"
+                    label="Usuário"
+                    :rules="userRules"
+                    required
+                  ></v-autocomplete>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    disabled
+                    v-model="rentalDate"
+                    label="Data do Aluguel (Hoje)"
+                    required
+                    type="date"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="forecastDate"
+                    :rules="forecastDateRules"
+                    label="Previsão de Devolução"
+                    required
+                    type="date"
+                    :min="rentalDate"
+                    :max="MaxDate()"
+                  ></v-text-field>
+                </v-col>
+              </v-form>
             </v-col>
           </v-card-text>
           <v-card-actions>
@@ -182,8 +175,6 @@ import Rental from "@/services/rental";
 import Book from "@/services/book";
 import User from "@/services/user";
 import Swal from "sweetalert2";
-import { validationMixin } from "vuelidate";
-import { required } from "vuelidate/lib/validators";
 import TableTop from "@/components/TableTop";
 
 export default {
@@ -191,13 +182,6 @@ export default {
     TableTop,
   },
 
-  mixins: [validationMixin],
-  validations: {
-    book: { required },
-    user: { required },
-    rentalDate: { required },
-    forecastDate: { required },
-  },
   data() {
     return {
       noDataText: "Nenhum registro encontrado",
@@ -237,34 +221,10 @@ export default {
       dialogDevol: false,
       rentalId: null,
       loadingTable: true,
+      bookRules: [(v) => !!v || "Informe o livro"],
+      userRules: [(v) => !!v || "Informe o usuário"],
+      forecastDateRules: [(v) => !!v || "Informe a data de previsão"],
     };
-  },
-  computed: {
-    BookError() {
-      const errors = [];
-      if (!this.$v.book.$dirty) return errors;
-      !this.$v.book.required && errors.push("Informe o livro.");
-      return errors;
-    },
-    UserError() {
-      const errors = [];
-      if (!this.$v.user.$dirty) return errors;
-      !this.$v.user.required && errors.push("Informe o usuário.");
-      return errors;
-    },
-    AlugError() {
-      const errors = [];
-      if (!this.$v.rentalDate.$dirty) return errors;
-      !this.$v.rentalDate.required && errors.push("Informe a data do aluguel.");
-      return errors;
-    },
-    DevolError() {
-      const errors = [];
-      if (!this.$v.forecastDate.$dirty) return errors;
-      !this.$v.forecastDate.required &&
-        errors.push("Informe a previsão de devolução.");
-      return errors;
-    },
   },
   mounted() {
     this.getRentals();
@@ -318,8 +278,10 @@ export default {
 
       if (month) {
         formattedDate = `-${month}-${day}`;
+        if (month > 0 && month < 9) {
+          formattedDate = `${month + "0"}-${day}`;
+        }
       }
-
       if (year && month) {
         formattedDate = `${year}-${month}-${day}`;
       }
@@ -411,20 +373,24 @@ export default {
     openModalCreate() {
       this.ModalTitle = "Adicionar Aluguel";
       this.dialog = true;
-      this.$v.$reset();
 
       this.book = null;
       this.user = null;
       this.rentalDate = this.getCurrentDate();
       this.forecastDate = "";
       this.returnDate = "";
+
+      this.$refs.form.resetValidation();
     },
     closeModal() {
       this.dialog = false;
     },
-    confirm() {
-      this.$v.$touch();
-      if (!this.$v.$error) {
+    async confirm() {
+      if (this.$refs.form && typeof this.$refs.form.validate === "function") {
+        const isValid = await this.$refs.form.validate();
+        if (!isValid) {
+          return;
+        }
         if (this.ModalTitle === "Adicionar Aluguel") {
           const createdRental = {
             bookId: this.book,
