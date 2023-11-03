@@ -1,8 +1,8 @@
 <template>
-  <v-container fluid class="pa-4">
-    <v-layout row justify-center>
-      <v-flex v-for="card in cards" :key="card.id" sm6 xs12 md6 lg4>
-        <v-card class="ma-2" elevation="4" dark :loading="loadingCard">
+  <v-container fluid class="pa-6">
+    <v-layout row justify-content-center class="cardsLayout">
+      <v-flex v-for="card in cards" :key="card.id" sm6 xs12 md6 lg4 class="cardsFlex">
+        <v-card class="ma-2" dark elevation="4" :loading="loadingCard">
           <v-card-title>
             <v-icon left large>{{ card.icon }}</v-icon>
             {{ card.title }}
@@ -13,10 +13,10 @@
         </v-card>
       </v-flex>
     </v-layout>
-    <v-layout row wrap justify-space-around class="mt-6">
+    <v-flex row justify-space-around wrap class="mt-6 chartsGroup">
       <LineChart />
       <PieChart />
-    </v-layout>
+    </v-flex>
   </v-container>
 </template>
 

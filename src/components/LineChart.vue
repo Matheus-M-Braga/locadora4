@@ -1,5 +1,5 @@
 <template>
-  <v-card elevation="4" class="col-6 d-flex" :loading="loadingChart">
+  <v-card elevation="4" outlined class="col-6 charts" :loading="loadingChart">
     <canvas ref="myChart" width="450" height="200" class="chartBar"></canvas>
   </v-card>
 </template>

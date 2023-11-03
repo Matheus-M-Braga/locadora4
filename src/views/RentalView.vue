@@ -234,6 +234,7 @@ export default {
   methods: {
     updateSearch(newSearchValue) {
       const dateRegex = /^(\d{1,2})\/?(\d{1,2})?\/?(\d{0,4})?$/;
+      this.page = 1;
 
       if (dateRegex.test(newSearchValue)) {
         this.search = this.parseDate(newSearchValue);
@@ -274,16 +275,19 @@ export default {
     },
     parseDate(date) {
       const [day, month, year] = date.split("/");
-      let formattedDate = `-${day}`;
+      let formattedDate = `${day}`;
 
       if (month) {
         formattedDate = `-${month}-${day}`;
-        if (month > 0 && month < 9) {
-          formattedDate = `${month + "0"}-${day}`;
+        if (month == 1) {
+          formattedDate = `${month}-${day}`;
         }
       }
       if (year && month) {
         formattedDate = `${year}-${month}-${day}`;
+        if (year < 1000) {
+          formattedDate = `${2023}-${month}-${day}`;
+        }
       }
 
       return formattedDate;

@@ -1,5 +1,5 @@
 <template>
-  <v-card elevation="4" class="col-6" :loading="loadingChart">
+  <v-card elevation="4" class="col-6 charts" :loading="loadingChart">
     <canvas ref="myPieChart" width="450" height="200" class="chartPie"></canvas>
   </v-card>
 </template>
