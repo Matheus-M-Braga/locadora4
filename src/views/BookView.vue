@@ -58,7 +58,7 @@
                     :counter="50"
                     label="Nome"
                     required
-                    :rules="nameRules"
+                    :rules="stringRules"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
@@ -67,7 +67,7 @@
                     :counter="50"
                     label="Autor"
                     required
-                    :rules="authorRules"
+                    :rules="stringRules"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
@@ -190,26 +190,23 @@ export default {
       bookId: null,
       nameExists: false,
       loadingTable: true,
-      nameRules: [
-        (v) => !!v || "Informe o nome",
+      stringRules: [
+        (v) => !!v || "Preencha este campo",
         (v) => (v && v.length >= 3) || "Mínimo 3 caracteres",
         (v) => (v && v.length <= 50) || "Máximo 50 caracteres",
       ],
-      authorRules: [
-        (v) => !!v || "Informe o autor",
-        (v) => (v && v.length >= 3) || "Mínimo 3 caracteres",
-        (v) => (v && v.length <= 50) || "Máximo 50 caracteres",
+      publisherRules: [
+        (v) => !!v || "Preencha este campo",
       ],
-      publisherRules: [(v) => !!v || "Informe a editora"],
       releaseRules: [
-        (v) => !!v || "Informe o ano de lançamento",
+        (v) => !!v || "Preencha este campo",
         (v) => (v && v.length <= 4) || "Máximo 4 caracteres",
         (v) =>
           (v && v <= new Date().getFullYear()) ||
           `Não é possível ser posterior a ${new Date().getFullYear()}`,
       ],
       quantityRules: [
-        (v) => !!v || "Informe a quantidade",
+        (v) => !!v || "Preencha este campo",
         (v) => v >= 0 || "Estoque deve ser maior que 0",
         (v) => (v && v.length <= 4) || "Máximo 4 caracteres",
       ],

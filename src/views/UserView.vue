@@ -22,7 +22,7 @@
           :no-data-text="noDataText"
           :footer-props="{
             'items-per-page-text': 'Registros por página',
-            'items-per-page-options': [7, 10, 15, this.totalItems],
+            'items-per-page-options': [7, 15, 25, 50, this.totalItems],
           }"
           @update:options="handleOptionsUpdate"
           mobile-breakpoint="890"
@@ -59,7 +59,7 @@
                       label="Nome"
                       :counter="50"
                       required
-                      :rules="nameRules"
+                      :rules="stringRules"
                     ></v-text-field>
                   </v-col>
                   <v-col cols="12">
@@ -68,7 +68,7 @@
                       :counter="50"
                       label="Cidade"
                       required
-                      :rules="cityRules"
+                      :rules="stringRules"
                     ></v-text-field>
                   </v-col>
                   <v-col cols="12">
@@ -77,7 +77,7 @@
                       :counter="50"
                       label="Endereço"
                       required
-                      :rules="adressRules"
+                      :rules="stringRules"
                     ></v-text-field>
                   </v-col>
                   <v-col cols="12">
@@ -174,23 +174,13 @@ export default {
       userId: null,
       emailExists: false,
       loadingTable: true,
-      nameRules: [
-        (v) => !!v || "Informe o nome",
-        (v) => (v && v.length >= 3) || "Mínimo 3 caracteres",
-        (v) => (v && v.length <= 50) || "Máximo 50 caracteres",
-      ],
-      cityRules: [
-        (v) => !!v || "Informe a cidade",
-        (v) => (v && v.length >= 3) || "Mínimo 3 caracteres",
-        (v) => (v && v.length <= 50) || "Máximo 50 caracteres",
-      ],
-      adressRules: [
-        (v) => !!v || "Informe o endereço",
+      stringRules: [
+        (v) => !!v || "Preencha este campo",
         (v) => (v && v.length >= 3) || "Mínimo 3 caracteres",
         (v) => (v && v.length <= 50) || "Máximo 50 caracteres",
       ],
       emailRules: [
-        (v) => !!v || "Informe o email",
+        (v) => !!v || "Preencha este campo",
         (v) => (v && v.length >= 3) || "Mínimo 3 caracteres",
         (v) => (v && v.length <= 50) || "Máximo 50 caracteres",
         (v) =>

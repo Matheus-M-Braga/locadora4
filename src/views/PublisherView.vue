@@ -22,7 +22,7 @@
           :no-data-text="noDataText"
           :footer-props="{
             'items-per-page-text': 'Registros por página',
-            'items-per-page-options': [7, 10, 15, this.totalItems],
+            'items-per-page-options': [7, 15, 25, 50, this.totalItems],
           }"
           @update:options="handleOptionsUpdate"
           mobile-breakpoint="890"

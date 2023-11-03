@@ -20,7 +20,7 @@
           :no-data-text="noDataText"
           :footer-props="{
             'items-per-page-text': 'Registros por página',
-            'items-per-page-options': [7, 10, 15, this.totalItems],
+            'items-per-page-options': [7, 15, 25, 50, this.totalItems],
           }"
           @update:options="handleOptionsUpdate"
           mobile-breakpoint="890"
@@ -78,7 +78,7 @@
                     item-text="name"
                     label="Livro"
                     required
-                    :rules="bookRules"
+                    :rules="autocompleteRules"
                   ></v-autocomplete>
                 </v-col>
                 <v-col cols="12">
@@ -88,7 +88,7 @@
                     item-value="id"
                     item-text="name"
                     label="Usuário"
-                    :rules="userRules"
+                    :rules="autocompleteRules"
                     required
                   ></v-autocomplete>
                 </v-col>
@@ -221,8 +221,7 @@ export default {
       dialogDevol: false,
       rentalId: null,
       loadingTable: true,
-      bookRules: [(v) => !!v || "Informe o livro"],
-      userRules: [(v) => !!v || "Informe o usuário"],
+      autocompleteRules: [(v) => !!v || "Preencha este campo"],
       forecastDateRules: [(v) => !!v || "Informe a data de previsão"],
     };
   },
