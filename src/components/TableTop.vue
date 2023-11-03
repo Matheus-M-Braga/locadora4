@@ -4,7 +4,7 @@
       <v-toolbar-title class="title subheading text-h4 mr-15">{{
         PageTitle
       }}</v-toolbar-title>
-      <v-btn dark @click="openModalCreate"
+      <v-btn dark class="newBtn" @click="openModalCreate"
         >Novo <v-icon>mdi-plus</v-icon></v-btn
       >
     </v-row>

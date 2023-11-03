@@ -104,7 +104,9 @@ html,
   justify-content: space-between;
   align-items: center;
 }
-
+.newBtn {
+  background-color: #1E1E1E !important;
+}
 .searchbar {
   width: 30%;
   display: flex;
