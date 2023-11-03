@@ -59,7 +59,7 @@
                       :counter="50"
                       label="Nome"
                       required
-                      :rules="nameRules"
+                      :rules="stringRules"
                     ></v-text-field>
                   </v-col>
                   <v-col cols="12">
@@ -68,7 +68,7 @@
                       :counter="50"
                       label="Cidade"
                       required
-                      :rules="cityRules"
+                      :rules="stringRules"
                     ></v-text-field>
                   </v-col>
                 </v-form>
@@ -150,12 +150,7 @@ export default {
       publisherId: null,
       nameExists: false,
       loadingTable: true,
-      nameRules: [
-        (v) => !!v || "Informe o nome",
-        (v) => (v && v.length >= 3) || "Mínimo 3 caracteres",
-        (v) => (v && v.length <= 50) || "Máximo 50 caracteres",
-      ],
-      cityRules: [
+      stringRules: [
         (v) => !!v || "Informe a cidade",
         (v) => (v && v.length >= 3) || "Mínimo 3 caracteres",
         (v) => (v && v.length <= 50) || "Máximo 50 caracteres",
