@@ -151,7 +151,7 @@ export default {
       nameExists: false,
       loadingTable: true,
       stringRules: [
-        (v) => !!v || "Informe a cidade",
+        (v) => !!v || "Preencha este campo",
         (v) => (v && v.length >= 3) || "Mínimo 3 caracteres",
         (v) => (v && v.length <= 50) || "Máximo 50 caracteres",
       ],

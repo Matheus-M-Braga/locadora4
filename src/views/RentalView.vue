@@ -26,12 +26,6 @@
           mobile-breakpoint="890"
           class="elevation-1"
         >
-          <template v-slot:[`item.returnDate`]="{ item }">
-            <td v-if="item.returnDate != null">
-              {{ item.returnDate }}
-            </td>
-            <td v-if="item.returnDate == null" class="text-center">...</td>
-          </template>
           <template v-slot:[`item.status`]="{ item }">
             <td>
               <v-chip :class="statusClass(item)" class="black--text">
@@ -78,7 +72,7 @@
                     item-text="name"
                     label="Livro"
                     required
-                    :rules="autocompleteRules"
+                    :rules="Rules"
                   ></v-autocomplete>
                 </v-col>
                 <v-col cols="12">
@@ -88,7 +82,7 @@
                     item-value="id"
                     item-text="name"
                     label="Usuário"
-                    :rules="autocompleteRules"
+                    :rules="Rules"
                     required
                   ></v-autocomplete>
                 </v-col>
@@ -104,7 +98,7 @@
                 <v-col cols="12">
                   <v-text-field
                     v-model="forecastDate"
-                    :rules="forecastDateRules"
+                    :rules="Rules"
                     label="Previsão de Devolução"
                     required
                     type="date"
@@ -221,8 +215,7 @@ export default {
       dialogDevol: false,
       rentalId: null,
       loadingTable: true,
-      autocompleteRules: [(v) => !!v || "Preencha este campo"],
-      forecastDateRules: [(v) => !!v || "Informe a data de previsão"],
+      Rules: [(v) => !!v || "Preencha este campo"],
     };
   },
   mounted() {
@@ -362,17 +355,8 @@ export default {
         this.OrderByProperty = sortByMapping[options.sortBy[0]];
         this.OrderByDesc = options.sortDesc[0];
       } else {
-        this.OrderByProperty = "Status";
-        this.OrderByDesc = true;
-        this.rentals.sort((a, b) => {
-          if (a.status === "Pendente" && b.status !== "Pendente") {
-            return -1;
-          } else if (a.status !== "Pendente" && b.status === "Pendente") {
-            return 1;
-          } else {
-            return 0;
-          }
-        });
+        this.OrderByProperty = "Id";
+        this.OrderByDesc = false;
       }
       this.pageSize = options.itemsPerPage;
       this.page = options.page;
