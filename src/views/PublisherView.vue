@@ -87,46 +87,34 @@
         </v-form>
       </v-dialog>
     </v-row>
-    <!-- Modal delete -->
-    <v-row justify="center">
-      <v-dialog v-model="dialogDelete" persistent max-width="600px">
-        <v-card dark>
-          <v-card-title>
-            <span class="text-h5">Excluir Editora</span>
-          </v-card-title>
-          <v-card-text>
-            Tem certeza que deseja excluir a editora selecionada?
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="red darken-1" text @click="closeModalDelete">
-              Cancelar
-            </v-btn>
-            <v-btn color="green darken-1" text @click="confirmDelete">
-              Confirmar
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-    </v-row>
+    <ModalDelete
+      :dialogDelete="dialogDelete"
+      @close-modal-delete="closeModalDelete"
+      @confirm-delete="confirmDelete"
+      :EntityName="EntityName"
+    />
   </div>
 </template>
 
 <script>
 import Publisher from "@/services/publisher";
 import Swal from "sweetalert2";
-import TableTop from "@/components/TableTop.vue";
+import TableTop from "@/components/TableTop";
+import ModalDelete from "@/components/ModalDelete";
 
 export default {
   components: {
     TableTop,
+    ModalDelete,
   },
+
   data() {
     return {
       noDataText: "Nenhum registro encontrado",
       search: "",
       ModalTitle: "",
       PageTitle: "Editoras",
+      EntityName: "Editora",
       headers: [
         { text: "ID", value: "id" },
         { text: "Nome", value: "name" },

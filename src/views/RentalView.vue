@@ -119,28 +119,12 @@
         </v-card>
       </v-dialog>
     </v-row>
-    <!-- modal delete -->
-    <v-row justify="center">
-      <v-dialog v-model="dialogDelete" persistent max-width="600px">
-        <v-card dark>
-          <v-card-title>
-            <span class="text-h5">Excluir Aluguel</span>
-          </v-card-title>
-          <v-card-text>
-            Tem certeza que deseja excluir o item selecionado?
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="red darken-1" text @click="closeModalDelete">
-              Cancelar
-            </v-btn>
-            <v-btn color="green darken-1" text @click="confirmDelete(update)">
-              Confirmar
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-    </v-row>
+    <ModalDelete
+      :dialogDelete="dialogDelete"
+      @close-modal-delete="closeModalDelete"
+      @confirm-delete="confirmDelete"
+      :EntityName="EntityName"
+    />
     <!-- modal devol -->
     <v-row justify="center">
       <v-dialog v-model="dialogDevol" persistent max-width="600px">
@@ -170,10 +154,12 @@ import Book from "@/services/book";
 import User from "@/services/user";
 import Swal from "sweetalert2";
 import TableTop from "@/components/TableTop";
+import ModalDelete from "@/components/ModalDelete";
 
 export default {
   components: {
     TableTop,
+    ModalDelete,
   },
 
   data() {
@@ -182,6 +168,7 @@ export default {
       search: "",
       ModalTitle: "",
       PageTitle: "Aluguéis",
+      EntityName: "Aluguel",
       headers: [
         { text: "ID", value: "id" },
         { text: "Livro", align: "start", value: "book.name" },
@@ -422,8 +409,9 @@ export default {
     closeModalDelete() {
       this.dialogDelete = false;
     },
-    confirmDelete(rental) {
-      Rental.delete(rental)
+    confirmDelete() {
+      const deletedRental = this.update;
+      Rental.delete(deletedRental)
         .then(() => {
           Swal.fire({
             icon: "success",

@@ -129,6 +129,9 @@ html,
   max-width: 46%;
   min-height: 300px;
 }
+.modalDelete{
+  background-color: #181818 !important;
+}
 @media screen and (max-width: 600px) {
   .title_btn {
     /* flex-direction: column; */

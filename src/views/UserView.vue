@@ -106,28 +106,12 @@
         </v-form>
       </v-dialog>
     </v-row>
-    <!-- modal delete -->
-    <v-row justify="center">
-      <v-dialog v-model="dialogDelete" persistent max-width="600px">
-        <v-card dark>
-          <v-card-title>
-            <span class="text-h5">Excluir Usuário</span>
-          </v-card-title>
-          <v-card-text>
-            Tem certeza que deseja excluir o usuário selecionado?
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="red darken-1" text @click="closeModalDelete">
-              Cancelar
-            </v-btn>
-            <v-btn color="green darken-1" text @click="confirmDelete">
-              Confirmar
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-    </v-row>
+    <ModalDelete
+      :dialogDelete="dialogDelete"
+      @close-modal-delete="closeModalDelete"
+      @confirm-delete="confirmDelete"
+      :EntityName="EntityName"
+    />
   </div>
 </template>
 
@@ -135,10 +119,12 @@
 import User from "@/services/user";
 import Swal from "sweetalert2";
 import TableTop from "@/components/TableTop";
+import ModalDelete from "@/components/ModalDelete";
 
 export default {
   components: {
     TableTop,
+    ModalDelete,
   },
 
   data() {
@@ -147,6 +133,7 @@ export default {
       search: "",
       ModalTitle: "",
       PageTitle: "Usuários",
+      EntityName: "Usuário",
       headers: [
         { text: "ID", value: "id" },
         { text: "Nome", value: "name" },
