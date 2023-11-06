@@ -194,6 +194,7 @@ export default {
   methods: {
     updateSearch(newSearchValue) {
       this.search = newSearchValue;
+      this.page = 1;
       this.getUsers();
     },
     async getUsers() {

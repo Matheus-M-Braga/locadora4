@@ -195,9 +195,7 @@ export default {
         (v) => (v && v.length >= 3) || "Mínimo 3 caracteres",
         (v) => (v && v.length <= 50) || "Máximo 50 caracteres",
       ],
-      publisherRules: [
-        (v) => !!v || "Preencha este campo",
-      ],
+      publisherRules: [(v) => !!v || "Preencha este campo"],
       releaseRules: [
         (v) => !!v || "Preencha este campo",
         (v) => (v && v.length <= 4) || "Máximo 4 caracteres",
@@ -219,6 +217,7 @@ export default {
   methods: {
     updateSearch(newSearchValue) {
       this.search = newSearchValue;
+      this.page = 1;
       this.getBooks();
     },
     async getBooks() {

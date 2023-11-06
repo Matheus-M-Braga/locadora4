@@ -237,12 +237,12 @@ export default {
 
       if (dateRegex.test(newSearchValue)) {
         this.search = this.parseDate(newSearchValue);
-        console.log(this.search);
-        this.getRentals();
+      } else if (newSearchValue.match(/^\d{1,2}\/$/)) {
+        this.search = this.parseDate(newSearchValue);
       } else {
         this.search = newSearchValue;
-        this.getRentals();
       }
+      this.getRentals();
     },
     MaxDate() {
       const today = new Date();
@@ -273,22 +273,27 @@ export default {
       return localDate.toLocaleDateString("pt-BR", options);
     },
     parseDate(date) {
-      const [day, month, year] = date.split("/");
-      let formattedDate = `${day}`;
+      const dateParts = date.split("/");
+      let formattedDate = "";
 
-      if (month) {
-        formattedDate = `-${month}-${day}`;
-        if (month == 1) {
-          formattedDate = `${month}-${day}`;
-        }
-      }
-      if (year && month) {
-        formattedDate = `${year}-${month}-${day}`;
-        if (year < 1000) {
-          formattedDate = `${2023}-${month}-${day}`;
-        }
+      if (dateParts.length >= 1) {
+        const day = dateParts[0];
+        formattedDate = `${day}`;
       }
 
+      if (dateParts.length >= 2) {
+        const month = dateParts[1];
+        if (month.length === 2) {
+          formattedDate = `${month}-${formattedDate}`;
+        }
+      }
+
+      if (dateParts.length >= 3) {
+        const year = dateParts[2];
+        if (year.length === 4) {
+          formattedDate = `${year}-${formattedDate}`;
+        }
+      }
       return formattedDate;
     },
     getCurrentDate() {
