@@ -1,8 +1,8 @@
 <template>
   <nav>
     <v-navigation-drawer
-      absolute
       temporary
+      absolute
       dark
       v-model="isDrawerOpen"
       class="sidebar"
