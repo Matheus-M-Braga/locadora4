@@ -1,6 +1,9 @@
 @charset "UTF-8";
 
 /* Global */
+*{
+  font-family: 'Roboto', sans-serif;
+}
 html,
 .v-main {
   overflow: hidden;

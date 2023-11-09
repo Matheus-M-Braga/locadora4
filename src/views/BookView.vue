@@ -196,7 +196,7 @@ export default {
           if (this.bookId != null) {
             return true;
           }
-          return v > 0 || "Quantidade deve ser maior que 0";
+          return v >= 0 || "Quantidade deve ser maior que 0";
         },
       ],
     };
