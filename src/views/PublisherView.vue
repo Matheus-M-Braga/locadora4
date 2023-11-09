@@ -202,11 +202,12 @@ export default {
     openModalEdit(publisher) {
       this.ModalTitle = "Editar Editora";
       this.dialog = true;
-      this.$refs.form.resetValidation();
 
       this.publisherId = publisher.id;
       this.name = publisher.name;
       this.city = publisher.city;
+      
+      this.$refs.form.resetValidation();
     },
     closeModal() {
       this.dialog = false;

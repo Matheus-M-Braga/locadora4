@@ -185,14 +185,14 @@ export default {
       publisherRules: [(v) => !!v || "Preencha este campo"],
       releaseRules: [
         (v) => !!v || "Preencha este campo",
-        (v) => (v && v.length <= 4) || "Máximo 4 caracteres",
+        (v) => /^\d{4}$/.test(v) || "Formato de data inválido (YYYY)",
         (v) =>
           (v && v <= new Date().getFullYear()) ||
           `Não é possível ser posterior a ${new Date().getFullYear()}`,
       ],
       quantityRules: [
         (v) => !!v || "Preencha este campo",
-        (v) => v >= 0 || "Estoque deve ser maior que 0",
+        (v) => v > 0 || "Estoque deve ser maior que 0",
         (v) => (v && v.length <= 4) || "Máximo 4 caracteres",
       ],
     };
@@ -270,7 +270,6 @@ export default {
     openModalEdit(book) {
       this.ModalTitle = "Editar livro";
       this.dialog = true;
-      this.$refs.form.resetValidation();
 
       this.bookId = book.id;
       this.name = book.name;
@@ -279,6 +278,8 @@ export default {
       this.release = book.release;
       this.quantity = book.quantity;
       this.rented = book.rented;
+      
+      this.$refs.form.resetValidation();
     },
     closeModal() {
       this.dialog = false;

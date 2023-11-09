@@ -236,13 +236,14 @@ export default {
     openModalEdit(user) {
       this.ModalTitle = "Editar Usuário";
       this.dialog = true;
-      this.$refs.form.resetValidation();
 
       this.userId = user.id;
       this.name = user.name;
       this.address = user.address;
       this.city = user.city;
       this.email = user.email;
+
+      this.$refs.form.resetValidation();
     },
     closeModal() {
       this.dialog = false;
