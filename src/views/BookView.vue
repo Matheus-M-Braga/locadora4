@@ -192,8 +192,12 @@ export default {
       ],
       quantityRules: [
         (v) => !!v || "Preencha este campo",
-        (v) => v > 0 || "Estoque deve ser maior que 0",
-        (v) => (v && v.length <= 4) || "Máximo 4 caracteres",
+        (v) => {
+          if (this.bookId != null) {
+            return true;
+          }
+          return v > 0 || "Quantidade deve ser maior que 0";
+        },
       ],
     };
   },
@@ -276,9 +280,9 @@ export default {
       this.author = book.author;
       this.publisher = book.publisherId;
       this.release = book.release;
-      this.quantity = book.quantity;
+      this.quantity = book.quantity.toString();
       this.rented = book.rented;
-      
+
       this.$refs.form.resetValidation();
     },
     closeModal() {
