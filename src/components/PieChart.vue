@@ -2,7 +2,7 @@
   <v-card elevation="4" class="col-6 charts">
     <v-progress-circular
       v-if="rentals.length === 0"
-      class="center-progress"
+      class="center-progress mt-12"
       color="blue lighten-3"
       indeterminate
       :size="150"
