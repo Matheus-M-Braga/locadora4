@@ -75,6 +75,9 @@ html,
 }
 .charts {
   border: 2px solid rgb(182, 182, 182) !important;
+  text-align: center;
+  margin: 0 auto;
+  position: relative;
 }
 @media (max-width: 850px) {
   .chartsGroup {
