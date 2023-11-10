@@ -10,7 +10,7 @@
     <canvas
       ref="myChart"
       width="450"
-      height="280"
+      height="200"
       class="chartBar"
       :style="{ display: mostrented.length > 0 ? 'block' : 'none' }"
     ></canvas>
