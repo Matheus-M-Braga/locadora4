@@ -1,6 +1,19 @@
 <template>
-  <v-card elevation="4" class="col-6 charts" :loading="loadingChart">
-    <canvas ref="myPieChart" width="450" height="200" class="chartPie"></canvas>
+  <v-card elevation="4" class="col-6 charts">
+    <v-progress-circular
+      v-if="rentals.length === 0"
+      class="center-progress mt-12"
+      color="blue lighten-3"
+      indeterminate
+      :size="150"
+    ></v-progress-circular>
+    <canvas
+      ref="myPieChart"
+      width="450"
+      height="200"
+      class="chartPie"
+      :style="{ display: rentals.length > 0 ? 'block' : 'none' }"
+    ></canvas>
   </v-card>
 </template>
 
