@@ -111,7 +111,7 @@
             <v-btn color="red darken-1" text @click="closeModal">
               Cancelar
             </v-btn>
-            <v-btn color="blue darken-1" text @click="confirm"> Salvar </v-btn>
+            <v-btn color="green darken-1" text @click="confirm"> Salvar </v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -185,7 +185,7 @@ export default {
       publisherRules: [(v) => !!v || "Preencha este campo"],
       releaseRules: [
         (v) => !!v || "Preencha este campo",
-        (v) => /^\d{4}$/.test(v) || "Formato de data inválido (YYYY)",
+        (v) => /^\d{4}$/.test(v) || "Informe um ano válido (YYYY)",
         (v) =>
           (v && v <= new Date().getFullYear()) ||
           `Não é possível ser posterior a ${new Date().getFullYear()}`,
