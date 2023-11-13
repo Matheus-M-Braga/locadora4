@@ -125,26 +125,11 @@
       @confirm-delete="confirmDelete"
       :EntityName="EntityName"
     />
-    <!-- modal devol -->
-    <v-row justify="center">
-      <v-dialog v-model="dialogDevol" persistent max-width="600px">
-        <v-card dark>
-          <v-card-title>
-            <span class="text-h5">Devolver Livro</span>
-          </v-card-title>
-          <v-card-text>Tem certeza que deseja devolver o livro? </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="red darken-1" text @click="closeModalDevol">
-              Cancelar
-            </v-btn>
-            <v-btn color="green darken-1" text @click="confirmDevol(update)">
-              Confirmar
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-    </v-row>
+    <ModalDevol
+      :dialogDevol="dialogDevol"
+      @close-modal-devol="closeModalDevol"
+      @confirm-devol="confirmDevol"
+    />
   </div>
 </template>
 
@@ -155,11 +140,13 @@ import User from "@/services/user";
 import Swal from "sweetalert2";
 import TableTop from "@/components/TableTop";
 import ModalDelete from "@/components/ModalDelete";
+import ModalDevol from "@/components/ModalDevol";
 
 export default {
   components: {
     TableTop,
     ModalDelete,
+    ModalDevol,
   },
 
   data() {
@@ -440,9 +427,9 @@ export default {
       this.dialogDevol = true;
       this.update = { ...rental };
     },
-    confirmDevol(rental) {
+    confirmDevol() {
       const returnedRental = {
-        id: rental.id,
+        id: this.update.id,
         returnDate: new Date().toISOString().substr(0, 10),
       };
       Rental.update(returnedRental)

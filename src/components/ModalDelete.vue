@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="internalDialogDelete" persistent max-width="420">
+  <v-dialog v-model="internalDialogDelete" persistent max-width="480">
     <v-card dark class="modalDelete">
       <v-card-title class="d-flex justify-center">
         <span class="text-h5">Excluir {{ EntityName }}</span>
