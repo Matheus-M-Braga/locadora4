@@ -11,6 +11,7 @@
         <v-data-table
           dark
           :loading="loadingTable"
+          :loading-text="'Carregando dados...'"
           :headers="headers"
           :header-props="headerprops"
           :items="publishers"

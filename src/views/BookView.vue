@@ -9,8 +9,8 @@
       />
       <v-row wrap class="table">
         <v-data-table
-          dark
           :loading="loadingTable"
+          :loading-text="'Carregando dados...'"
           :headers="headers"
           :header-props="headerprops"
           :items="books"
@@ -27,6 +27,7 @@
           @update:options="handleOptionsUpdate"
           mobile-breakpoint="890"
           class="elevation-1"
+          dark
           item-key="id"
         >
           <template v-slot:[`item.acoes`]="{ item }">
