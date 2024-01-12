@@ -16,7 +16,7 @@ export default {
     });
   },
   listSelect: () => {
-    return axios.get("users/getallselect");
+    return axios.get("users/getsummary");
   },
   create: (user) => {
     return axios.post("users", user);

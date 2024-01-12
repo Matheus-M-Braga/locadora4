@@ -16,7 +16,7 @@ export default {
     });
   },
   listSelect: () => {
-    return axios.get("publishers/getallselect");
+    return axios.get("publishers/getsummary");
   },
   create: (publisher) => {
     return axios.post("publishers", publisher);
