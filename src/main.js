@@ -6,7 +6,7 @@ import 'sweetalert2/dist/sweetalert2.min.css';
 import Swal from 'sweetalert2';
 import Vuelidate from "vuelidate";
 
-Vue.config.productionTip = false;
+Vue.config.productionTip = true;
 Vue.use(Vuelidate)
 Vue.prototype.$swal = Swal; 
 
